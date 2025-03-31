@@ -1,20 +1,6 @@
-//// Ticket related
-//            System.out.println("1.  Buy a ticket");
-//            System.out.println("2.  View participants under 25");
-//            System.out.println("3.  View all tickets (including discounts)");
-//
-//// Event & schedule
-//            System.out.println("4.  View full schedule for a specific day");
-//            System.out.println("5.  View top 3 longest events");
-//            System.out.println("6.  Order all events by start time");
-//            System.out.println("7.  Group events by type");
-//            System.out.println("8.  Find events that start at a specific time");
-
 package ro.festival.service;
 import ro.festival.model.*;
-import ro.festival.model.eventtypes.CampEats;
-import ro.festival.model.eventtypes.DJ;
-import ro.festival.model.eventtypes.FunZone;
+import ro.festival.model.eventtypes.*;
 
 
 import java.time.Duration;
@@ -23,21 +9,186 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class FestivalService {
-    private List<Ticket> tickets = new ArrayList<>();
-    private Set<Participant> participants = new HashSet<>();
-    private List<Event> events = new ArrayList<>();
-    private Map<Integer, List<Event>> scheduleByDay = new HashMap<>();
-    private Map<Organizer, List<Event>> organizderEvents = new HashMap<>();
+    private List<Ticket> tickets;
+    private Set<Participant> participants;
+    private List<Event> events;
+    private Map<Integer, List<Event>> scheduleByDay; //programul evenimentelor in fiecare zi
+    private Map<Organizer, List<Event>> organizerEvents;
 
 
     public FestivalService() {
-        //aici va fi demo
+        this.tickets = new ArrayList<>();
+        this.participants = new HashSet<>();
+        this.events = new ArrayList<>();
+        this.scheduleByDay = new HashMap<>();
+        this.organizerEvents = new HashMap<>();
+    }
+
+
+    public void initDemoData(){
+        // ==================================
+        //              TICKETS
+        // ==================================
+        Ticket t1 = new Ticket("T001", 250.0);
+        Ticket t2 = new Ticket("T002", 300.0);
+        Ticket t3 = new Ticket("T003", 275.5);
+        Ticket t4 = new Ticket("T004", 310.75);
+        Ticket t5 = new Ticket("T005", 199.99);
+        TicketUnder25 t6 = new TicketUnder25("T006", 200.0, 10.0);
+        TicketUnder25 t7 = new TicketUnder25("T007", 180.0, 15.0);
+        TicketUnder25 t8 = new TicketUnder25("T008", 220.0, 12.5);
+
+        tickets.addAll(List.of(t1, t2, t3, t4, t5, t6, t7, t8));
+
+        // ==================================
+        //              PARTICIPANTS
+        // ==================================
+        Participant p1 = new Participant("Ioana", 28, t1);
+        Participant p2 = new Participant("Mihai", 32, t2);
+        Participant p3 = new Participant("Elena", 25, t3);
+        Participant p4 = new Participant("Vlad", 29, t4);
+        Participant p5 = new Participant("Radu", 23, t5); // sub 25, dar are bilet normal
+        Participant p6 = new Participant("Ana", 22, t6); // TicketUnder25
+        Participant p7 = new Participant("Daria", 20, t7); // TicketUnder25
+        Participant p8 = new Participant("Alex", 19, t8); // TicketUnder25
+
+        participants.addAll(List.of(p1, p2, p3, p4, p5, p6, p7, p8));
+
+
+        // ====================================================================================
+        //                    EVENTS (every event will be added in scheduleByDay)
+        // ====================================================================================
+
+        // ==================================
+        //              CAMP EATS
+        // ==================================
+
+        //  Salty Corner 1 – Ziua 1
+        CampEats salty1 = new CampEats(
+                "Salty Delights", LocalTime.of(17, 0), LocalTime.of(2, 0), FestivalDay.DAY1,
+                "The Pretzel Cart", List.of("pretzels", "nachos", "salted peanuts"), true
+        );
+
+        //  Salty Corner 2 – Ziua 2
+        CampEats salty2 = new CampEats(
+                "Savoury Stop", LocalTime.of(16, 0), LocalTime.of(23, 30), FestivalDay.DAY2,
+                "Savory & Co", List.of("cheese sticks", "mini-pies", "salty muffins"), false
+        );
+
+        //  Sweet Corner – Ziua 3
+        CampEats sweetCorner = new CampEats(
+                "Sweet Corner", LocalTime.of(12, 0), LocalTime.of(22, 0), FestivalDay.DAY3,
+                "Candy House", List.of("cotton candy", "lollipops", "ice cream"), false
+        );
+
+        //  Fast Food – Ziua 1
+        CampEats fastFood = new CampEats(
+                "Fast & Yummy", LocalTime.of(19, 0), LocalTime.of(3, 30), FestivalDay.DAY1,
+                "Grill Bros", List.of("burgers", "fries", "cola"), true
+        );
+        events.addAll(List.of(salty1, salty2, sweetCorner, fastFood));
+
+
+        //computeIfAbsent(...)
+        //      --> verifica daca o cheie exista deja intr-un Map
+        //      --> daca nu exista, creeaza o valoarea noua, o adauga in Map si o returneaza
+        //      --> daca exista, doar o returneaza
+        scheduleByDay.computeIfAbsent(1, k -> new ArrayList<>()).addAll(List.of(salty1, fastFood));
+        scheduleByDay.computeIfAbsent(2, k -> new ArrayList<>()).add(salty2);
+        scheduleByDay.computeIfAbsent(3, k -> new ArrayList<>()).add(sweetCorner);
+
+        // ==================================
+        //              CONCERT
+        // ==================================
+        Concert c1 = new Concert("Imagine Dragons Live", LocalTime.of(20, 0),
+                LocalTime.of(22, 30), FestivalDay.DAY1, "Imagine Dragons", "Alternative Rock");
+        Concert c2 = new Concert("Coldplay Vibes", LocalTime.of(22, 30),
+                LocalTime.of(0, 0), FestivalDay.DAY1, "Coldplay", "Pop Rock");
+        Concert c3 = new Concert("EDM Arena", LocalTime.of(21, 0),
+                LocalTime.of(23, 0), FestivalDay.DAY2, "Martin Garrix", "EDM");
+        events.addAll(List.of(c1, c2, c3));
+
+        scheduleByDay.computeIfAbsent(1, k -> new ArrayList<>()).addAll(List.of(c1, c2));
+        scheduleByDay.computeIfAbsent(2, k -> new ArrayList<>()).add(c3);
+        //nu se creeaza o lista noua, doar returneaza lista existenta si o foloseste
+
+        // ==================================
+        //              DJ
+        // ==================================
+        DJ dj1 = new DJ("Night Vibes", LocalTime.of(23, 0),
+                LocalTime.of(1, 0), FestivalDay.DAY2, "Armin Van Buuren", true);
+        DJ dj2 = new DJ("Electro Pulse", LocalTime.of(1, 0),
+                LocalTime.of(3, 0), FestivalDay.DAY3, "David Guetta", true);
+        DJ dj3 = new DJ("Chill Grooves", LocalTime.of(20, 0),
+                LocalTime.of(22, 0), FestivalDay.DAY3, "Kygo", false);
+        events.addAll(List.of(dj1, dj2, dj3));
+
+        scheduleByDay.computeIfAbsent(2, k -> new ArrayList<>()).add(dj1);
+        scheduleByDay.computeIfAbsent(3, k -> new ArrayList<>()).addAll(List.of(dj2, dj3));
+
+        // ==================================
+        //             FUN ZONE
+        // ==================================
+        // Games
+        Game g1 = new Game("Escape Room", true, true, 8);
+        Game g2 = new Game("Arcade Zone", false, false, 20);
+        Game g3 = new Game("Virtual Reality Arena", true, false, 10);
+        Game g4 = new Game("Foosball Tournament", false, true, 12);
+
+        FunZone fz1 = new FunZone("FunZone Madness", LocalTime.of(16, 0),
+                LocalTime.of(22, 0), FestivalDay.DAY1, List.of(g1, g2));
+        FunZone fz2 = new FunZone("GameZone Fiesta",
+                LocalTime.of(15, 0), LocalTime.of(23, 0), FestivalDay.DAY3, List.of(g3, g4));
+        events.addAll(List.of(fz1, fz2));
+
+        scheduleByDay.computeIfAbsent(1, k -> new ArrayList<>()).add(fz1);
+        scheduleByDay.computeIfAbsent(3, k -> new ArrayList<>()).add(fz2);
+
+        // ==================================
+        //             FUN ZONE
+        // ==================================
+        GlobalTalks gt1 = new GlobalTalks("Future of Music", LocalTime.of(14, 0),
+                LocalTime.of(15, 30), FestivalDay.DAY2, "Elena Popescu", "AI in Music", 100);
+        GlobalTalks gt2 = new GlobalTalks("Festival Sustainability", LocalTime.of(10, 0),
+                LocalTime.of(11, 30), FestivalDay.DAY3, "Andrei Ionescu", "Green Festivals", 80);
+        GlobalTalks gt3 = new GlobalTalks("Marketing 4 Festivals", LocalTime.of(12, 0),
+                LocalTime.of(13, 30), FestivalDay.DAY3, "Ioana Georgescu", "Social Media Magic", 120);
+        events.addAll(List.of(gt1, gt2, gt3));
+
+        scheduleByDay.computeIfAbsent(2, k -> new ArrayList<>()).add(gt1);
+        scheduleByDay.computeIfAbsent(3, k -> new ArrayList<>()).addAll(List.of(gt2, gt3));
+
+        // ======================================================================
+        //             ORGANIZERS ( adding in organizerEvents)
+        // =======================================================================
+        Organizer org1 = new Organizer("Stage Masters", "Cristian D.",
+                List.of(c1, c2, c3, dj1, dj2, dj3));
+        Organizer org2 = new Organizer("Taste & Joy", "Alina P.",
+                List.of(salty1, salty2, sweetCorner, fastFood));
+        Organizer org3 = new Organizer("Experience Lab", "Mihai R.",
+                List.of(fz1, fz2, gt1, gt2, gt3));
+
+        // aici s-a folosit put pt ca deja avem lista de evenimente si vrem sa o atribuim unui organizator(cheia in acest caz)
+        // computeIfAbsent am folosit pt ca nu stiam sigur daca cheia exista, poate deja am adaugat ev in ziua 1 poate nu
+            //computeIfAbsent se asigura ca lista deja exista ca sa pot da .add pe ea
+
+        organizerEvents.put(org1, org1.getEvents());
+        organizerEvents.put(org2, org2.getEvents());
+        organizerEvents.put(org3, org3.getEvents());
     }
 
     // === 1. Buy a ticket ===
-//    public void buyTicket(Participant p, double price) {
-//        Ticket ticket = new Ticket(p, price);
-//    }
+    public Ticket buyTicket(double price, int ok) {
+        if (ok == 1) {
+            TicketUnder25 ticket = new TicketUnder25(tickets.getLast().getCode()+1, price, 15);
+        }
+        Ticket ticket = new Ticket(tickets.getLast().getCode()+1, price);
+
+    }
+
+    public void addParticipants(String firstName, int age, Ticket ticket) {
+        participants
+    }
 
     // === 2. View participants under 25 ===
     public void printParticipantsUnder25(){
@@ -142,7 +293,7 @@ public class FestivalService {
 
     // === 12. View all organizers and their events ===
     public void printOrganizersAndEvents(){
-        organizderEvents.forEach((organizer, eventList) -> {
+        organizerEvents.forEach((organizer, eventList) -> {
             System.out.println("Organizers: " + organizer.getOrganizerName());
             eventList.forEach(e->System.out.println("    - " + e));
         });
