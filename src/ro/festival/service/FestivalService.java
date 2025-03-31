@@ -12,6 +12,9 @@
 
 package ro.festival.service;
 import ro.festival.model.*;
+import ro.festival.model.eventtypes.CampEats;
+import ro.festival.model.eventtypes.DJ;
+import ro.festival.model.eventtypes.FunZone;
 
 
 import java.time.Duration;
@@ -24,6 +27,7 @@ public class FestivalService {
     private Set<Participant> participants = new HashSet<>();
     private List<Event> events = new ArrayList<>();
     private Map<Integer, List<Event>> scheduleByDay = new HashMap<>();
+    private Map<Organizer, List<Event>> organizderEvents = new HashMap<>();
 
 
     public FestivalService() {
@@ -107,6 +111,42 @@ public class FestivalService {
                 .forEach(System.out::println);
     }
 
+    // === 9. Show all DJ sets on the main stage ===
+    public void printDJOnMainStage(){
+        events.stream()
+                .filter(e-> e instanceof DJ) //true doar daca e este un DJ
+                .map( e -> (DJ) e) //transforma fiecare Event din stream intr-un ob de tip DJ, folosind un cast
+                .filter(DJ::getIsMainStage)
+                .forEach(System.out::println);
+    }
+
+    // === 10. Show all night-games in FunZone ===
+    public void printAllNightGames(){
+        events.stream()
+                .filter( e -> e instanceof FunZone)
+                .map( e -> (FunZone) e) //necesar sa facem ca sa putem accesa metode ale clasei FunZone
+                .flatMap(fz -> fz.getGames().stream()) //"desface" toate listele de jocuri intr-un
+                                                                // singur flux continuu
+                .filter(Game::isOpenAllNight) //pastreaza doar jocurile deschise toata noaptea
+                .forEach(System.out::println);
+    }
+
+    // === 11. Show food vendors open all night ===
+    public void printAllNightFood(){
+        events.stream()
+                .filter(e-> e instanceof CampEats)
+                .map( e -> (CampEats) e)
+                .filter(CampEats::isOpenUntilLate)
+                .forEach(System.out::println);
+    }
+
+    // === 12. View all organizers and their events ===
+    public void printOrganizersAndEvents(){
+        organizderEvents.forEach((organizer, eventList) -> {
+            System.out.println("Organizers: " + organizer.getOrganizerName());
+            eventList.forEach(e->System.out.println("    - " + e));
+        });
+    }
 
 
 }
