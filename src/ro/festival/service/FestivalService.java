@@ -185,7 +185,7 @@ public class FestivalService {
         Ticket ticket = new Ticket(tickets.getLast().getCode()+1, price);
 
     }
-
+    //aici ai ramas
     public void addParticipants(String firstName, int age, Ticket ticket) {
         participants
     }
