@@ -30,7 +30,9 @@ public class Main {
 
             // Event & schedule
             System.out.println("4.  View full schedule for a specific day ordered by start time");
-            System.out.println("5.  View top 3 longest events");
+            System.out.println("5.  Reserve a seat for a limited-capacity event");
+
+
             System.out.println("6.  Order all events by start time");
             System.out.println("7.  Group events by type");
             System.out.println("8.  Find events that start after a specific time");
@@ -38,12 +40,12 @@ public class Main {
             // Event types
             System.out.println("9.  Show all DJ sets on the main stage");
             System.out.println("10. Show all-night games in FunZone");
-
-            // Food
-            System.out.println("11. Show food vendors open all night");
+            System.out.println("11. Join a competition in the FunZone");
 
             // Organizers
             System.out.println("12. View all organizers and their events");
+            System.out.println("13. Move an event to another day");
+            System.out.println("14. View festival statistics");
 
             // Exit
             System.out.println("0.  Exit the application");
@@ -85,8 +87,7 @@ public class Main {
                 }
 
                 case "5" -> {
-                    System.out.println("Top 3 longest events:");
-                    festivalService.printTop3LongestEvents();
+                    festivalService.reserveSeat();
                 }
                 case "6" -> {
                     System.out.println("Events ordered by start time:");
@@ -111,12 +112,17 @@ public class Main {
                     festivalService.printAllNightGames();
                 }
                 case "11" -> {
-                    System.out.println("Food vendors open all night:");
-                    festivalService.printAllNightFood();
+                    festivalService.joinCompetition();
                 }
                 case "12" -> {
                     System.out.println("Organizers and their events:");
                     festivalService.printOrganizersAndEvents();
+                }
+                case "13" ->{
+                    festivalService.moveEvent();
+                }
+                case "14" -> {
+                    festivalService.viewStatistics();
                 }
                 case "0"  -> {
                     System.out.println("Thank you for visiting the Festival App. See you soon!");

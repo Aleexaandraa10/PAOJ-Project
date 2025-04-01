@@ -1,7 +1,6 @@
 package ro.festival.service;
 import ro.festival.model.*;
 import ro.festival.model.eventtypes.*;
-import java.time.Duration;
 import java.time.LocalTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -261,15 +260,9 @@ public class FestivalService {
                 .forEach(System.out::println);
     }
 
-    // === 5. View top 3 longest events ===
-    public void printTop3LongestEvents() {
-        events.stream()
-                .sorted(Comparator.comparing(e ->
-                                Duration.between(((Event) e).getStartTime(), ((Event) e).getEndTime()))
-                        .reversed()
-                )
-                .limit(3)
-                .forEach(System.out::println);
+    // === 5. Reserve a seat for a limited-capacity event ===
+    public void reserveSeat(){
+
     }
 
     // === 6. Order all events by start time ===
@@ -324,13 +317,9 @@ public class FestivalService {
                 .forEach(System.out::println);
     }
 
-    // === 11. Show food vendors open all night ===
-    public void printAllNightFood(){
-        events.stream()
-                .filter(e-> e instanceof CampEats)
-                .map( e -> (CampEats) e)
-                .filter(CampEats::isOpenUntilLate)
-                .forEach(System.out::println);
+    // === 11. Join a competition in the FunZone ===
+    public void joinCompetition(){
+
     }
 
     // === 12. View all organizers and their events ===
@@ -340,6 +329,17 @@ public class FestivalService {
             eventList.forEach(e->System.out.println("    - " + e));
         });
     }
+
+    // === 13. Move an event to another day ===
+    public void moveEvent(){
+
+    }
+
+    // === 14. View festival statistics ===
+    public void viewStatistics(){
+
+    }
+
 
 
 }
