@@ -49,7 +49,6 @@ public class Main {
 
 
             // Exit
-
             System.out.println("0.  Exit the application");
             System.out.println("=================================================");
 
@@ -114,19 +113,13 @@ public class Main {
                     System.out.println("Games in FunZone open all night:");
                     festivalService.printAllNightGames();
                 }
-                case "11" -> {
-                    festivalService.joinCompetition();
-                }
+                case "11" -> festivalService.joinCompetition();
                 case "12" -> {
                     System.out.println("Organizers and their events:");
                     festivalService.printOrganizersAndEvents();
                 }
-                case "13" ->{
-                    festivalService.moveEvent();
-                }
-                case "14" -> {
-                    festivalService.viewStatistics();
-                }
+                case "13" -> festivalService.moveEvent();
+                case "14" -> festivalService.viewStatistics();
                 case "0"  -> {
                     System.out.println("Thank you for visiting the Festival App. See you soon!");
                     running = false;
