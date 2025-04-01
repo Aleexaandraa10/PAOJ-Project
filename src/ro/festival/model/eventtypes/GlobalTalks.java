@@ -23,7 +23,7 @@ public class GlobalTalks extends Event{
 
     @Override
     public String toString(){
-        return super.toString() + "\n   The speaker is " + speakerName
+        return super.toString() + "\n    The speaker is " + speakerName
                 + ", discussing the topic " + topic + ", with " + seats + " available seats.";
     }
 }

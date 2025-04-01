@@ -34,9 +34,9 @@ public class CampEats extends Event {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append(super.toString());
-        sb.append("\n Vendor: ").append(vendorName);
-        sb.append("\n Food options: ").append(String.join(", ", foodType));
-        sb.append("\n Open until late: ").append(openUntilLate ? "Yes" : "No");
+        sb.append("\n    Vendor: ").append(vendorName);
+        sb.append("\n    Food options: ").append(String.join(", ", foodType));
+        sb.append("\n    Open until late: ").append(openUntilLate ? "Yes" : "No");
         return sb.toString();
     }
 

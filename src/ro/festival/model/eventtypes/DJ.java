@@ -20,6 +20,6 @@ public class DJ extends Event {
 
     @Override
     public String toString() {
-        return super.toString() + "\n   The DJ features " + djName + ". You can find the DJ on " + (isMainStage ? "the main stage." : "the secondary stage.");
+        return super.toString() + "\n    The DJ features " + djName + ". You can find the DJ on " + (isMainStage ? "the main stage." : "the secondary stage.");
     }
 }

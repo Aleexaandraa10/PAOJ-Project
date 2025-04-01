@@ -231,8 +231,7 @@ public class FestivalService {
     public void printParticipantsUnder25(){
         participants.stream()
                 .filter(p-> p.getAge()<25)
-                .forEach(p->System.out.println(p.getParticipantName() + "(" + p.getAge() + "years old)"));
-
+                .forEach(p->System.out.println(p.getParticipantName() + " (" + p.getAge() + "years old)"));
     }
 
     // === 3. View all tickets ===
@@ -253,7 +252,9 @@ public class FestivalService {
             System.out.println("No events scheduled for Day " + day);
             return;
         }
-        dayEvents.forEach(System.out::println);
+        dayEvents.stream()
+                .sorted(Comparator.comparing(Event::getStartTime))
+                .forEach(System.out::println);
     }
 
     // === 5. View top 3 longest events ===

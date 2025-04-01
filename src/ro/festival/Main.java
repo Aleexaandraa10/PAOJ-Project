@@ -11,6 +11,7 @@ public class Main {
         Scanner scanner = new Scanner(System.in);
         FestivalService festivalService = new FestivalService();
         festivalService.initDemoData();
+
         System.out.println("Welcome to the Festival App!");
         System.out.println("We’re happy to see you!\n");
 
@@ -27,7 +28,7 @@ public class Main {
             System.out.println("3.  View all tickets (including discounts)");
 
             // Event & schedule
-            System.out.println("4.  View full schedule for a specific day");
+            System.out.println("4.  View full schedule for a specific day ordered by start time");
             System.out.println("5.  View top 3 longest events");
             System.out.println("6.  Order all events by start time");
             System.out.println("7.  Group events by type");
@@ -55,22 +56,35 @@ public class Main {
                 case "1" -> {
                     festivalService.buyTicketInteractively(scanner);
                 }
-                case "2" -> System.out.println("Participants under 25:");
-                case "3" -> System.out.println("All tickets issued:");
+                case "2" -> {
+                    System.out.println("Participants under 25:");
+                    festivalService.printParticipantsUnder25();
+                }
+                case "3" -> {
+                    System.out.println("All tickets issued:");
+                    festivalService.printAllTickets();
+                }
                 case "4" -> {
                     System.out.println("What day would you like to view?");
                     System.out.println("1 - Day 1");
                     System.out.println("2 - Day 2");
                     System.out.println("3 - Day 3");
                     System.out.print("Your choice: ");
-                    String dayChoice = scanner.nextLine();
-                    switch (dayChoice) {
-                        case "1" -> System.out.println("Schedule for Day 1:\n");
-                        case "2" -> System.out.println("Schedule for Day 2:\n");
-                        case "3" -> System.out.println("Schedule for Day 3:\n");
-                        default -> System.out.println("Invalid day selected.\n");
+
+                    try {
+                        int day = Integer.parseInt(scanner.nextLine());
+
+                        if (day >= 1 && day <= 3) {
+                            System.out.println("Schedule for Day " + day + ":\n");
+                            festivalService.printScheduleForDay(day);
+                        } else {
+                            System.out.println("Invalid day selected.\n");
+                        }
+                    } catch (NumberFormatException e) {
+                        System.out.println("Please enter a valid number (1, 2, or 3).");
                     }
                 }
+
                 case "5" -> System.out.println("Top 3 longest events:");
                 case "6" -> System.out.println("Events ordered by start time:");
                 case "7" -> System.out.println("Events grouped by type:");

@@ -23,6 +23,6 @@ public class Game {
         return gameName +
                 (isOpenAllNight ? " is open all night" : " isn't open all night") +
                 (hasPrize ? ", has prize available " : ", has no prize available ") +
-                        " and has " + maxCapacity + " available seats.";
+                        "and has " + maxCapacity + " available seats.";
     }
 }
