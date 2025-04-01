@@ -7,7 +7,7 @@ import java.time.LocalTime;
 import java.util.List;
 
 public class FunZone extends Event{
-    private List<Game> games;
+    private final List<Game> games;
 
     public FunZone(String eventName, LocalTime startTime, LocalTime endTime, FestivalDay day, List<Game> games) {
         super(eventName, startTime, endTime, day);

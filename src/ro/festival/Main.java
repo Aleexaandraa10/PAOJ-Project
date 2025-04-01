@@ -54,9 +54,7 @@ public class Main {
             System.out.println();
 
             switch (input) {
-                case "1" -> {
-                    festivalService.buyTicketInteractively(scanner);
-                }
+                case "1" -> festivalService.buyTicketInteractively(scanner);
                 case "2" -> {
                     System.out.println("Participants under 25:");
                     festivalService.printParticipantsUnder25();

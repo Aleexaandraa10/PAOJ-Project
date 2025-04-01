@@ -9,7 +9,7 @@ import java.util.List;
 public class CampEats extends Event {
     private String vendorName;
     private List<String> foodType;
-    private boolean openUntilLate;
+    private final boolean openUntilLate;
 
     public CampEats(String eventName, LocalTime startTime, LocalTime endTime, FestivalDay day, String vendorName, List <String> foodType, boolean openUntilLate) {
         super(eventName, startTime, endTime, day);
@@ -32,12 +32,10 @@ public class CampEats extends Event {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append(super.toString());
-        sb.append("\n    Vendor: ").append(vendorName);
-        sb.append("\n    Food options: ").append(String.join(", ", foodType));
-        sb.append("\n    Open until late: ").append(openUntilLate ? "Yes" : "No");
-        return sb.toString();
+        return super.toString() +
+                "\n    Vendor: " + vendorName +
+                "\n    Food options: " + String.join(", ", foodType) +
+                "\n    Open until late: " + (openUntilLate ? "Yes" : "No");
     }
 
 }

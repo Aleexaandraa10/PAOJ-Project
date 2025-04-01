@@ -1,8 +1,8 @@
 package ro.festival.model;
 
 public class Ticket {
-    private String code;
-    protected double price;
+    private final String code;
+    private final double price;
 
     public Ticket(String code, double price) {
         this.code = code;

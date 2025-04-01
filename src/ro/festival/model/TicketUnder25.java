@@ -1,9 +1,7 @@
 package ro.festival.model;
 
-import ro.festival.model.Ticket;
-
 public class TicketUnder25 extends Ticket {
-    private double discountPercentage;
+    private final double discountPercentage;
 
     public TicketUnder25(String code, double price, double discountPercentage) {
         super(code, price);

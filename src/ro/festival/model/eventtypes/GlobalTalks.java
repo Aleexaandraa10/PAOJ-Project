@@ -6,9 +6,9 @@ import ro.festival.model.Event;
 import java.time.LocalTime;
 
 public class GlobalTalks extends Event{
-    private String speakerName;
-    private String topic;
-    private int seats;
+    private final String speakerName;
+    private final String topic;
+    private final int seats;
 
     public GlobalTalks(String eventName, LocalTime startTime, LocalTime endTime, FestivalDay day, String speakerName, String topic, int seats) {
         super(eventName, startTime, endTime, day);

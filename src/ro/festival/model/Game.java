@@ -1,10 +1,10 @@
 package ro.festival.model;
 
 public class Game {
-    private String gameName;
-    private boolean isOpenAllNight;
-    private boolean hasPrize;
-    private int maxCapacity;
+    private final String gameName;
+    private final boolean isOpenAllNight;
+    private final boolean hasPrize;
+    private final int maxCapacity;
 
     public Game(String gameName, boolean isOpenAllNight, boolean hasPrize, int maxCapacity) {
         this.gameName = gameName;

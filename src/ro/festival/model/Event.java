@@ -3,10 +3,10 @@ package ro.festival.model;
 import java.time.LocalTime;
 
 public abstract class Event {
-    private String eventName;
-    private LocalTime startTime;
-    private LocalTime endTime;
-    protected FestivalDay day;
+    private final String eventName;
+    private final LocalTime startTime;
+    private final LocalTime endTime;
+    private final FestivalDay day;
 
     public Event(String eventName, LocalTime startTime, LocalTime endTime, FestivalDay day) {
         this.eventName = eventName;

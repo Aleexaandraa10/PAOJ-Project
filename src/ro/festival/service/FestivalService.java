@@ -1,19 +1,23 @@
 package ro.festival.service;
 import ro.festival.model.*;
 import ro.festival.model.eventtypes.*;
-
-
 import java.time.Duration;
 import java.time.LocalTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
+// idee de baza: daca un atribut nu tb sa se modifice dupa instantiere, il fac final
+// e ca si cum as spune: acest camp face parte din identitatea obiectului si nu se va schimba
+
 public class FestivalService {
-    private List<Ticket> tickets;
-    private Set<Participant> participants;
-    private List<Event> events;
-    private Map<Integer, List<Event>> scheduleByDay; //programul evenimentelor in fiecare zi
-    private Map<Organizer, List<Event>> organizerEvents;
+    // final pt un atribut = nu se mai poate schimba referinta listei
+    // dar pot modifica continutul listei --> .add(), .clear()
+
+    private final List<Ticket> tickets;
+    private final Set<Participant> participants;
+    private final List<Event> events;
+    private final Map<Integer, List<Event>> scheduleByDay; //programul evenimentelor in fiecare zi
+    private final Map<Organizer, List<Event>> organizerEvents;
 
 
     public FestivalService() {
@@ -172,9 +176,9 @@ public class FestivalService {
         // computeIfAbsent am folosit pt ca nu stiam sigur daca cheia exista, poate deja am adaugat ev in ziua 1 poate nu
             //computeIfAbsent se asigura ca lista deja exista ca sa pot da .add pe ea
 
-        organizerEvents.put(org1, org1.getEvents());
-        organizerEvents.put(org2, org2.getEvents());
-        organizerEvents.put(org3, org3.getEvents());
+        organizerEvents.put(org1, org1.events());
+        organizerEvents.put(org2, org2.events());
+        organizerEvents.put(org3, org3.events());
     }
 
     // === 1. Buy a ticket + add participant ===
@@ -230,8 +234,8 @@ public class FestivalService {
     // === 2. View participants under 25 ===
     public void printParticipantsUnder25(){
         participants.stream()
-                .filter(p-> p.getAge()<25)
-                .forEach(p->System.out.println(p.getParticipantName() + " (" + p.getAge() + "years old)"));
+                .filter(p-> p.age()<25)
+                .forEach(p->System.out.println(p.participantName() + " (" + p.age() + "years old)"));
     }
 
     // === 3. View all tickets ===
@@ -332,7 +336,7 @@ public class FestivalService {
     // === 12. View all organizers and their events ===
     public void printOrganizersAndEvents(){
         organizerEvents.forEach((organizer, eventList) -> {
-            System.out.println("Organizers: " + organizer.getOrganizerName());
+            System.out.println("Organizers: " + organizer.organizerName());
             eventList.forEach(e->System.out.println("    - " + e));
         });
     }

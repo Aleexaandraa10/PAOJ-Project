@@ -5,8 +5,8 @@ import ro.festival.model.FestivalDay;
 import java.time.LocalTime;
 
 public class Concert extends Event {
-    private String artist;
-    private String genre;
+    private final String artist;
+    private final String genre;
 
     public Concert(String eventName, LocalTime startTime, LocalTime endTime, FestivalDay day, String artist, String genre) {
         super(eventName, startTime, endTime, day);

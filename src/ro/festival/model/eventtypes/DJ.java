@@ -6,8 +6,8 @@ import ro.festival.model.Event;
 import java.time.LocalTime;
 
 public class DJ extends Event {
-    private String djName;
-    private boolean isMainStage;
+    private final String djName;
+    private final boolean isMainStage;
 
     public DJ(String eventName, LocalTime startTime, LocalTime endTime, FestivalDay day, String djName, boolean isMainStage) {
         super(eventName, startTime, endTime, day);
