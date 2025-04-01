@@ -47,7 +47,9 @@ public class Main {
             System.out.println("13. Move an event to another day");
             System.out.println("14. View festival statistics");
 
+
             // Exit
+
             System.out.println("0.  Exit the application");
             System.out.println("=================================================");
 
