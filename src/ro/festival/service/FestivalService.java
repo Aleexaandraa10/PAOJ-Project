@@ -293,10 +293,10 @@ public class FestivalService {
         // .getSimpleName() --> Concert
     }
 
-    // === 8. Find events that start at a specific time ===
+    // === 8. Find events that start after a specific time ===
     public void printEventsByStartTime(LocalTime time){
         events.stream()
-                .filter(e -> e.getStartTime().equals(time))
+                .filter(e -> e.getStartTime().isAfter(time))
                 .forEach(System.out::println);
     }
 

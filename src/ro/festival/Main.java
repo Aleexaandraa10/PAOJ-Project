@@ -2,6 +2,7 @@ package ro.festival;
 
 import ro.festival.service.FestivalService;
 
+import java.time.LocalTime;
 import java.util.Scanner;
 
 public class Main {
@@ -32,7 +33,7 @@ public class Main {
             System.out.println("5.  View top 3 longest events");
             System.out.println("6.  Order all events by start time");
             System.out.println("7.  Group events by type");
-            System.out.println("8.  Find events that start at a specific time");
+            System.out.println("8.  Find events that start after a specific time");
 
             // Event types
             System.out.println("9.  Show all DJ sets on the main stage");
@@ -85,13 +86,23 @@ public class Main {
                     }
                 }
 
-                case "5" -> System.out.println("Top 3 longest events:");
-                case "6" -> System.out.println("Events ordered by start time:");
-                case "7" -> System.out.println("Events grouped by type:");
+                case "5" -> {
+                    System.out.println("Top 3 longest events:");
+                    festivalService.printTop3LongestEvents();
+                }
+                case "6" -> {
+                    System.out.println("Events ordered by start time:");
+                    festivalService.printEventsOrderedByStartTime();
+                }
+                case "7" -> {
+                    System.out.println("Events grouped by type:");
+                    festivalService.groupEventsByType();
+                }
                 case "8" -> {
                     System.out.print("Enter time (HH:mm): ");
-                    String time = scanner.nextLine();
-                    System.out.println("Events starting at " + time + ":");
+                    LocalTime time = LocalTime.parse(scanner.nextLine());
+                    System.out.println("Events starting after " + time + ":");
+                    festivalService.printEventsByStartTime(time);
                 }
                 case "9"  -> System.out.println("DJ sets on the main stage:");
                 case "10" -> System.out.println("Games in FunZone open all night:");
