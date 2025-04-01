@@ -102,10 +102,22 @@ public class Main {
                     System.out.println("Events starting after " + time + ":");
                     festivalService.printEventsByStartTime(time);
                 }
-                case "9"  -> System.out.println("DJ sets on the main stage:");
-                case "10" -> System.out.println("Games in FunZone open all night:");
-                case "11" -> System.out.println("Food vendors open all night:");
-                case "12" -> System.out.println("Organizers and their events:");
+                case "9"  -> {
+                    System.out.println("DJ sets on the main stage:");
+                    festivalService.printDJOnMainStage();
+                }
+                case "10" -> {
+                    System.out.println("Games in FunZone open all night:");
+                    festivalService.printAllNightGames();
+                }
+                case "11" -> {
+                    System.out.println("Food vendors open all night:");
+                    festivalService.printAllNightFood();
+                }
+                case "12" -> {
+                    System.out.println("Organizers and their events:");
+                    festivalService.printOrganizersAndEvents();
+                }
                 case "0"  -> {
                     System.out.println("Thank you for visiting the Festival App. See you soon!");
                     running = false;
