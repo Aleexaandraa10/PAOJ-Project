@@ -10,6 +10,7 @@ public class Main {
         // mai intai implementeaza tu niste functionalitati si mai vezi dupa
         Scanner scanner = new Scanner(System.in);
         FestivalService festivalService = new FestivalService();
+        festivalService.initDemoData();
         System.out.println("Welcome to the Festival App!");
         System.out.println("We’re happy to see you!\n");
 
@@ -52,30 +53,7 @@ public class Main {
 
             switch (input) {
                 case "1" -> {
-                    int ok =0;
-                    System.out.println("Let's buy you a ticket.");
-                    System.out.println("Are you under 25? ( yes/no )");
-                    String answer = scanner.nextLine();
-                    if (answer.equals("yes")) {
-                        ok = 1;
-                        System.out.println("Great! You will have a discount!");
-                        //vezi pune cumva sa poti modifica pretul biletelor, un random poate
-                    }
-                    ticket = festivalService.buyTicket(300.0, ok);
-                    System.out.println("Great! Your ticket is available! Now we want more details about you!");
-                    System.out.println("What's your first name?");
-                    String firstName = scanner.nextLine();
-                    System.out.println("How old are you");
-                    String age = scanner.nextLine();
-                    festivalService.addParticipants(firstName, age, ticket);
-                    System.out.println("Your ticket has been built successfully! Details:");
-                    System.out.println("Your first name is " + firstName);
-                    System.out.println("Your age is " + age);
-                    System.out.println("You have discount?" ok ? : "yes ", "no");
-                    System.out.println("Initial price of the ticket: " + price);
-                    System.out.println("Final price of the ticket: " + price);
-
-
+                    festivalService.buyTicketInteractively(scanner);
                 }
                 case "2" -> System.out.println("Participants under 25:");
                 case "3" -> System.out.println("All tickets issued:");

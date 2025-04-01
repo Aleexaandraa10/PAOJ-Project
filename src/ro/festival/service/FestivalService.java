@@ -177,18 +177,55 @@ public class FestivalService {
         organizerEvents.put(org3, org3.getEvents());
     }
 
-    // === 1. Buy a ticket ===
-    public Ticket buyTicket(double price, int ok) {
-        if (ok == 1) {
-            TicketUnder25 ticket = new TicketUnder25(tickets.getLast().getCode()+1, price, 15);
-        }
-        Ticket ticket = new Ticket(tickets.getLast().getCode()+1, price);
+    // === 1. Buy a ticket + add participant ===
+    public void buyTicketInteractively(Scanner scanner) {
+        System.out.println("Let's buy you a ticket.");
 
+        System.out.print("How old are you? ");
+        int age = Integer.parseInt(scanner.nextLine());
+        boolean isUnder25 = age <= 25;
+
+        double basePrice = Math.round((200 + Math.random() * 200) * 100.0) / 100.0;
+
+        int discount = 0;
+        if (isUnder25) {
+            discount = 5 + new Random().nextInt(16);
+            System.out.println("You'll receive a discount of " + discount + "%!");
+        }
+
+        String code = "T" + String.format("%03d", tickets.size() + 1);
+        Ticket ticket = isUnder25
+                ? new TicketUnder25(code, basePrice, discount)
+                : new Ticket(code, basePrice);
+
+        tickets.add(ticket);
+
+        System.out.print("What's your first name? ");
+        String name = scanner.nextLine();
+
+
+
+        participants.add(new Participant(name, age, ticket));
+
+        double finalPrice = isUnder25
+                ? Math.round(basePrice * (1 - discount / 100.0) * 100.0) / 100.0
+                : basePrice;
+
+        System.out.println("\nTicket created successfully!");
+        System.out.println("Name: " + name);
+        System.out.println("Age: " + age);
+        System.out.println("Ticket code: " + code);
+        System.out.println("Initial price: " + basePrice + " RON");
+
+        if (isUnder25) {
+            System.out.println("Discount: " + discount + "%");
+            System.out.println("Final price after discount: " + finalPrice + " RON");
+        } else {
+            System.out.println("No discount applied.");
+        }
+        System.out.println("Ticket details:\n" + ticket);
     }
-    //aici ai ramas
-    public void addParticipants(String firstName, int age, Ticket ticket) {
-        participants
-    }
+
 
     // === 2. View participants under 25 ===
     public void printParticipantsUnder25(){
