@@ -87,7 +87,8 @@ public class Main {
                 }
 
                 case "5" -> {
-                    festivalService.reserveSeat();
+                    System.out.println("Reserve a seat for a limited-capacity event:");
+                    festivalService. reserveSeat_GlobalTalk(scanner);
                 }
                 case "6" -> {
                     System.out.println("Events ordered by start time:");

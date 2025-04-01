@@ -17,6 +17,7 @@ public class FestivalService {
     private final List<Event> events;
     private final Map<Integer, List<Event>> scheduleByDay; //programul evenimentelor in fiecare zi
     private final Map<Organizer, List<Event>> organizerEvents;
+    private final Map<GlobalTalks, List<Participant>> reservedSeats = new HashMap<>();
 
 
     public FestivalService() {
@@ -147,19 +148,26 @@ public class FestivalService {
         scheduleByDay.computeIfAbsent(1, k -> new ArrayList<>()).add(fz1);
         scheduleByDay.computeIfAbsent(3, k -> new ArrayList<>()).add(fz2);
 
-        // ==================================
-        //             FUN ZONE
-        // ==================================
+        // ===============================================
+        //             GLOBAL TALKS ( + reserved seats)
+        // ===============================================
         GlobalTalks gt1 = new GlobalTalks("Future of Music", LocalTime.of(14, 0),
-                LocalTime.of(15, 30), FestivalDay.DAY2, "Elena Popescu", "AI in Music", 100);
+                LocalTime.of(15, 30), FestivalDay.DAY2, "Elena Popescu", "AI in Music", 8);
         GlobalTalks gt2 = new GlobalTalks("Festival Sustainability", LocalTime.of(10, 0),
-                LocalTime.of(11, 30), FestivalDay.DAY3, "Andrei Ionescu", "Green Festivals", 80);
+                LocalTime.of(11, 30), FestivalDay.DAY3, "Andrei Ionescu", "Green Festivals", 5);
         GlobalTalks gt3 = new GlobalTalks("Marketing 4 Festivals", LocalTime.of(12, 0),
-                LocalTime.of(13, 30), FestivalDay.DAY3, "Ioana Georgescu", "Social Media Magic", 120);
+                LocalTime.of(13, 30), FestivalDay.DAY3, "Ioana Georgescu", "Social Media Magic", 4);
         events.addAll(List.of(gt1, gt2, gt3));
 
         scheduleByDay.computeIfAbsent(2, k -> new ArrayList<>()).add(gt1);
         scheduleByDay.computeIfAbsent(3, k -> new ArrayList<>()).addAll(List.of(gt2, gt3));
+
+        reservedSeats.put(gt1, new ArrayList<>(List.of(p1, p2, p3, p4, p5, p6, p7, p8)));
+        reservedSeats.put(gt2, new ArrayList<>(List.of(p1, p2, p3, p4)));
+        reservedSeats.put(gt3, new ArrayList<>(List.of(p8))); //nu am putut face doar List.of(p8) pt ca a
+                            // s fi creat o lista imutabila(read-only) pe care nu as mai fi putut s-o modific dupa
+                            // asa cum fac la fct de la 5
+
 
         // ======================================================================
         //             ORGANIZERS ( adding in organizerEvents)
@@ -261,7 +269,56 @@ public class FestivalService {
     }
 
     // === 5. Reserve a seat for a limited-capacity event ===
-    public void reserveSeat(){
+    public void reserveSeat_GlobalTalk(Scanner scanner){
+        List<GlobalTalks> talks = events.stream()
+                .filter(e -> e instanceof GlobalTalks)
+                .map( e -> (GlobalTalks) e)
+                .toList();
+        if(talks.isEmpty()){
+            System.out.println("No global talks found");
+            return;
+        }
+
+        System.out.println("Available global talks events: ");
+        for(int i=0; i<talks.size(); i++){
+            System.out.println( (i+1) + ". " + talks.get(i).toString());
+        }
+
+        System.out.println("Choose the event number: ");
+        int index = Integer.parseInt(scanner.nextLine()) - 1;
+
+        if(index < 0 || index >= talks.size()){
+            System.out.println("Please enter a valid index.");
+            return;
+        }
+
+        GlobalTalks selected = talks.get(index);
+        // computeIfAbsent = daca nu exista il creez si il adaug, daca exista il folosesc
+        List<Participant> reserved = reservedSeats.computeIfAbsent(selected, k -> new ArrayList<>());
+
+        if(reserved.size() >= selected.getSeats()){
+            System.out.println("Sorry, this talk is fully booked!");
+            return;
+        }
+        System.out.print("Your name: ");
+        String name = scanner.nextLine();
+
+        System.out.print("Your age? ");
+        int age = Integer.parseInt(scanner.nextLine());
+
+        Participant participant = new Participant(name, age, null);
+
+        reserved.add(participant);
+        System.out.println("Reservation confirmed for " + selected.getEventName() + "!");
+        System.out.println("\nThe participants for this event are: ");
+        reservedSeats.forEach((key, participantsList) -> {
+            if(key.equals(selected)){
+                for(Participant p: participantsList) {
+                    System.out.println(" - " + p.participantName());
+                }
+            }
+        });
+        System.out.println("Available seats: " + (selected.getSeats()-reserved.size()) );
 
     }
 
