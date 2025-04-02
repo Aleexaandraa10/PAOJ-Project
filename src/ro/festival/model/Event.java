@@ -16,7 +16,6 @@ public abstract class Event {
     }
     public String getEventName() { return eventName; }
     public LocalTime getStartTime() { return startTime; }
-    public LocalTime getEndTime() { return endTime; }
     public FestivalDay getDay() { return day; }
 
     @Override

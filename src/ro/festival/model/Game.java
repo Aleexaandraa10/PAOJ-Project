@@ -13,10 +13,7 @@ public class Game {
         this.maxCapacity = maxCapacity;
     }
 
-    public String getGameName() { return gameName; }
     public boolean isOpenAllNight() { return isOpenAllNight; }
-    public boolean hasPrice() { return hasPrize; }
-    public int getMaxCapacity() { return maxCapacity; }
 
     @Override
     public String toString() {

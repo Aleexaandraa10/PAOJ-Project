@@ -7,9 +7,6 @@ public class TicketUnder25 extends Ticket {
         super(code, price);
         this.discountPercentage = discountPercentage;
     }
-    public double getDiscountPercentage() {
-        return discountPercentage;
-    }
 
     @Override
     public String toString() {

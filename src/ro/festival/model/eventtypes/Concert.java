@@ -14,9 +14,6 @@ public class Concert extends Event {
         this.genre = genre;
     }
 
-    public String getArtist() { return artist; }
-    public String getGenre() { return genre; }
-
     @Override
     public String toString() {
         return super.toString() + "\n    The concert features " + artist + " performing " + genre + " music.";

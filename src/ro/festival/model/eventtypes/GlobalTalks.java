@@ -17,8 +17,6 @@ public class GlobalTalks extends Event{
         this.seats = seats;
     }
 
-    public String getSpeakerName() { return speakerName; }
-    public String getTopic() { return topic; }
     public int getSeats() { return seats; }
 
     @Override

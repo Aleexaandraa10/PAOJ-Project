@@ -15,7 +15,6 @@ public class DJ extends Event {
         this.isMainStage = isMainStage;
     }
 
-    public String getDjName() {return djName;}
     public boolean getIsMainStage() {return isMainStage;}
 
     @Override

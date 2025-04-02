@@ -12,11 +12,14 @@ public class FestivalService {
     // final pt un atribut = nu se mai poate schimba referinta listei
     // dar pot modifica continutul listei --> .add(), .clear()
 
+    // Interrogations
     private final List<Ticket> tickets;
     private final Set<Participant> participants;
     private final List<Event> events;
-    private final Map<Integer, List<Event>> scheduleByDay; //programul evenimentelor in fiecare zi
     private final Map<Organizer, List<Event>> organizerEvents;
+
+    // Actions
+    private final Map<Integer, List<Event>> scheduleByDay; //programul evenimentelor in fiecare zi
     private final Map<GlobalTalks, List<Participant>> reservedSeats;
     private final Map<Participant, Integer> participantPoints;
     private final Map<Event, List<Participant>> eventAttended;
@@ -63,9 +66,9 @@ public class FestivalService {
         participants.addAll(List.of(p1, p2, p3, p4, p5, p6, p7, p8));
 
 
-        // ========================================================================================
+        // =============================================================================================================
         //                    EVENTS (every event will be added in scheduleByDay + eventAttended )
-        // ========================================================================================
+        // =============================================================================================================
 
         // ==================================
         //              CAMP EATS
@@ -161,9 +164,9 @@ public class FestivalService {
         scheduleByDay.computeIfAbsent(1, k -> new ArrayList<>()).add(fz1);
         scheduleByDay.computeIfAbsent(3, k -> new ArrayList<>()).add(fz2);
 
-        // ===============================================
+        // ==================================================
         //             GLOBAL TALKS ( + reserved seats)
-        // ===============================================
+        // ==================================================
         GlobalTalks gt1 = new GlobalTalks("Future of Music", LocalTime.of(14, 0),
                 LocalTime.of(15, 30), FestivalDay.DAY2, "Elena Popescu", "AI in Music", 8);
         GlobalTalks gt2 = new GlobalTalks("Festival Sustainability", LocalTime.of(10, 0),
@@ -187,7 +190,7 @@ public class FestivalService {
 
 
         // ======================================================================
-        //             ORGANIZERS ( adding in organizerEvents)
+        //             ORGANIZERS ( adding in organizerEvents )
         // =======================================================================
         Organizer org1 = new Organizer("Stage Masters", "Cristian D.",
                 List.of(c1, c2, c3, dj1, dj2, dj3));
@@ -205,12 +208,113 @@ public class FestivalService {
         organizerEvents.put(org3, org3.events());
     }
 
-    // === 1. Buy a ticket + add participant ===
+
+    // =================================================================================================================
+    //                                           APPLICATION FUNCTIONALITIES
+    // =================================================================================================================
+    // === 1. View all tickets ===
+    public void printAllTickets(){
+        if(tickets.isEmpty()){
+            System.out.println("No tickets found");
+            return;
+        }
+        tickets.forEach(System.out::println);
+    }
+
+    // === 2. View participants under 25 ===
+    public void printParticipantsUnder25(){
+        participants.stream()
+                .filter(p-> p.age()<25)
+                .forEach(p->System.out.println(p.participantName() + " (" + p.age() + "years old)"));
+    }
+
+    // === 3. View participation stats (top participants & event types) ===
+    public void viewParticipationInsights() {
+        System.out.println("----- Festival Participation Insights -----");
+
+        String mostCommonType = events.stream()
+                .collect(Collectors.groupingBy(
+                        e -> e.getClass().getSimpleName(),     // grupăm după tipul clasei (ex: "Concert")
+                        Collectors.counting()                        //  numărăm câte apariții are fiecare tip
+                )) //pana aici am facut Map<String, Long> unde String este tipul ev si Long este nr de aparitii
+                .entrySet().stream()                                 //  convertim mapa într-un stream de entry-uri
+                .max(Map.Entry.comparingByValue())        //  căutăm entry-ul cu cea mai mare valoare (adică cel mai frecvent)
+                .map(Map.Entry::getKey)                   //  extragem cheia (adică tipul clasei)
+                .orElse("N/A");                     //  dacă nu există niciun element, returnăm "N/A"
+
+
+        System.out.println("\nMost frequent event type: " + mostCommonType);
+
+        // === Participanții cu cele mai multe participări ===
+        Map<Participant, Long> participations = eventAttended.values().stream()//.values() ia doar List<Participant> din perechea (cheie, val)
+                .flatMap(List::stream) //aplatizam toate listele de participanti intr-un flux continuu
+                .collect(Collectors.groupingBy(p -> p, Collectors.counting())); // obtinem un Map<Participant, Long>, unde Long e de cate ori a participat
+
+        System.out.println("\nTop 3 participants by number of attended events:");
+        participations.entrySet().stream()
+                .sorted(Map.Entry.<Participant, Long>comparingByValue().reversed())
+                .limit(3)
+                .forEach(entry -> System.out.println("• " + entry.getKey().participantName() + ": " + entry.getValue() + " events"));
+    }
+
+    // === 4. View full schedule for a specific day ===
+    public void printScheduleForDay(int day) {
+        FestivalDay selectedDay = FestivalDay.valueOf("DAY" + day);
+
+        List<Event> dayEvents = scheduleByDay.getOrDefault(day, new ArrayList<>());
+
+        if (dayEvents.isEmpty()) {
+            System.out.println("No events scheduled for " + selectedDay);
+            return;
+        }
+
+        System.out.println("Events scheduled for " + selectedDay + ":");
+        dayEvents.stream()
+                .sorted(Comparator.comparing(Event::getStartTime))
+                .forEach(System.out::println);
+    }
+
+    // === 5. Show all DJ sets on the main stage ===
+    public void printDJOnMainStage(){
+        events.stream()
+                .filter(e-> e instanceof DJ) //true doar daca e este un DJ
+                .map( e -> (DJ) e) //transforma fiecare Event din stream intr-un ob de tip DJ, folosind un cast
+                .filter(DJ::getIsMainStage)
+                .forEach(System.out::println);
+    }
+
+    // === 6. Show all night-games in FunZone ===
+    public void printAllNightGames(){
+        events.stream()
+                .filter( e -> e instanceof FunZone)
+                .map( e -> (FunZone) e) //necesar sa facem ca sa putem accesa metode ale clasei FunZone
+                .flatMap(fz -> fz.getGames().stream()) //"desface" toate listele de jocuri intr-un
+                // singur flux continuu
+                .filter(Game::isOpenAllNight) //pastreaza doar jocurile deschise toata noaptea
+                .forEach(System.out::println);
+    }
+
+    // === 7. View all organizers and their events ===
+    public void printOrganizersAndEvents(){
+        organizerEvents.forEach((organizer, eventList) -> {
+            System.out.println("Organizers: " + organizer.organizerName());
+            eventList.forEach(e->System.out.println("    - " + e));
+        });
+    }
+
+    // === 8. Buy a ticket + add participant ===
     public void buyTicketInteractively(Scanner scanner) {
         System.out.println("Let's buy you a ticket.");
 
         System.out.print("How old are you? ");
-        int age = Integer.parseInt(scanner.nextLine());
+        String input = scanner.nextLine().trim();
+
+        if (!input.matches("^(1[4-9]|[2-5][0-9]|60)$")) {
+            System.out.println("Invalid age. Must be between 14 and 60.");
+            return;
+        }
+
+        int age = Integer.parseInt(input);
         boolean isUnder25 = age <= 25;
 
         double basePrice = Math.round((200 + Math.random() * 200) * 100.0) / 100.0;
@@ -231,7 +335,11 @@ public class FestivalService {
         System.out.print("What's your first name? ");
         String name = scanner.nextLine();
 
-
+        //unul sau mai multe nume precedate de spatiu, prima lit mare, restul mici, din cel putin 2 litere
+        if (!name.matches("^([A-Z][a-z]+)( [A-Z][a-z]+)*$")) {
+            System.out.println("Invalid name. It should start with a capital letter and have more than one letter.");
+            return;
+        }
 
         participants.add(new Participant(name, age, ticket));
 
@@ -254,38 +362,39 @@ public class FestivalService {
         System.out.println("Ticket details:\n" + ticket);
     }
 
+    // === 9. Group events by type ===
+    public void groupEventsByType(){
+        Map<String, List<Event>> grouped = events.stream()
+                .collect(Collectors.groupingBy(e->e.getClass().getSimpleName()));
 
-    // === 2. View participants under 25 ===
-    public void printParticipantsUnder25(){
-        participants.stream()
-                .filter(p-> p.age()<25)
-                .forEach(p->System.out.println(p.participantName() + " (" + p.age() + "years old)"));
+        // pentru fiecare el. e vreau sa fie grupat dupa e.getClass().getSimpleName(), deci se creeaza automat map
+        // String din cheie este rezultatul e.getClass().getSimpleName()
+        //.collect() este o op terminala intr-un Stream, care transforma fluxul de date intr-o colectie noua
+        // .collect() = ok, am parcurs stream-ul, acum vreau sa strang totul intr-un rezultat final
+
+        grouped.forEach((type, eventList) -> {
+            System.out.println("=== " + type + " ===");
+            eventList.forEach(System.out::println);
+        });
+        // .getClass() --> Concert.class
+        // .getSimpleName() --> Concert
     }
 
-    // === 3. View all tickets ===
-    public void printAllTickets(){
-        if(tickets.isEmpty()){
-            System.out.println("No tickets found");
-            return;
-        }
-        tickets.forEach(System.out::println);
-    }
-
-    // === 4. View full schedule for a specific day ===
-    public void printScheduleForDay(int day){
-        //se returneaza lista de evenimente pt ziua day
-        List<Event> dayEvents = scheduleByDay.getOrDefault(day, new ArrayList<>());
-
-        if(dayEvents.isEmpty()){
-            System.out.println("No events scheduled for Day " + day);
-            return;
-        }
-        dayEvents.stream()
+    // === 10. Order all events by start time ===
+    public void printEventsOrderedByStartTime() {
+        events.stream()
                 .sorted(Comparator.comparing(Event::getStartTime))
                 .forEach(System.out::println);
     }
 
-    // === 5. Reserve a seat for a limited-capacity event ===
+    // === 11. Find events that start after a specific time ===
+    public void printEventsByStartTime(LocalTime time){
+        events.stream()
+                .filter(e -> e.getStartTime().isAfter(time))
+                .forEach(System.out::println);
+    }
+
+    // === 12. Reserve a seat for a limited-capacity event ===
     public void reserveSeat_GlobalTalk(Scanner scanner){
         List<GlobalTalks> talks = events.stream()
                 .filter(e -> e instanceof GlobalTalks)
@@ -320,6 +429,11 @@ public class FestivalService {
         System.out.print("Your name: ");
         String name = scanner.nextLine();
 
+        if (!name.matches("^([A-Z][a-z]+)( [A-Z][a-z]+)*$")) {
+            System.out.println("Invalid name. It should start with a capital letter and have more than one letter.");
+            return;
+        }
+
         System.out.print("Your age? ");
         int age = Integer.parseInt(scanner.nextLine());
 
@@ -337,96 +451,6 @@ public class FestivalService {
         });
         System.out.println("Available seats: " + (selected.getSeats()-reserved.size()) );
 
-    }
-
-    // === 6. Order all events by start time ===
-    public void printEventsOrderedByStartTime() {
-        events.stream()
-                .sorted(Comparator.comparing(Event::getStartTime))
-                .forEach(System.out::println);
-    }
-
-    // === 7. Group events by type ===
-    public void groupEventsByType(){
-        Map<String, List<Event>> grouped = events.stream()
-                .collect(Collectors.groupingBy(e->e.getClass().getSimpleName()));
-
-        // pentru fiecare el. e vreau sa fie grupat dupa e.getClass().getSimpleName(), deci se creeaza automat map
-        // String din cheie este rezultatul e.getClass().getSimpleName()
-        //.collect() este o op terminala intr-un Stream, care transforma fluxul de date intr-o colectie noua
-        // .collect() = ok, am parcurs stream-ul, acum vreau sa strang totul intr-un rezultat final
-
-        grouped.forEach((type, eventList) -> {
-            System.out.println("=== " + type + " ===");
-            eventList.forEach(System.out::println);
-        });
-        // .getClass() --> Concert.class
-        // .getSimpleName() --> Concert
-    }
-
-    // === 8. Find events that start after a specific time ===
-    public void printEventsByStartTime(LocalTime time){
-        events.stream()
-                .filter(e -> e.getStartTime().isAfter(time))
-                .forEach(System.out::println);
-    }
-
-    // === 9. Show all DJ sets on the main stage ===
-    public void printDJOnMainStage(){
-        events.stream()
-                .filter(e-> e instanceof DJ) //true doar daca e este un DJ
-                .map( e -> (DJ) e) //transforma fiecare Event din stream intr-un ob de tip DJ, folosind un cast
-                .filter(DJ::getIsMainStage)
-                .forEach(System.out::println);
-    }
-
-    // === 10. Show all night-games in FunZone ===
-    public void printAllNightGames(){
-        events.stream()
-                .filter( e -> e instanceof FunZone)
-                .map( e -> (FunZone) e) //necesar sa facem ca sa putem accesa metode ale clasei FunZone
-                .flatMap(fz -> fz.getGames().stream()) //"desface" toate listele de jocuri intr-un
-                                                                // singur flux continuu
-                .filter(Game::isOpenAllNight) //pastreaza doar jocurile deschise toata noaptea
-                .forEach(System.out::println);
-    }
-
-    // === 11. View participation stats (top participants & event types) ===
-    public void viewParticipationInsights() {
-        System.out.println("----- Festival Participation Insights -----");
-
-        String mostCommonType = events.stream()
-                .collect(Collectors.groupingBy(
-                        e -> e.getClass().getSimpleName(),     // grupăm după tipul clasei (ex: "Concert")
-                        Collectors.counting()                        //  numărăm câte apariții are fiecare tip
-                )) //pana aici am facut Map<String, Long> unde String este tipul ev si Long este nr de aparitii
-                .entrySet().stream()                                 //  convertim mapa într-un stream de entry-uri
-                .max(Map.Entry.comparingByValue())        //  căutăm entry-ul cu cea mai mare valoare (adică cel mai frecvent)
-                .map(Map.Entry::getKey)                   //  extragem cheia (adică tipul clasei)
-                .orElse("N/A");                     //  dacă nu există niciun element, returnăm "N/A"
-
-
-        System.out.println("\nMost frequent event type: " + mostCommonType);
-
-        // === Participanții cu cele mai multe participări ===
-        Map<Participant, Long> participations = eventAttended.values().stream()//.values() ia doar List<Participant> din perechea (cheie, val)
-                .flatMap(List::stream) //aplatizam toate listele de participanti intr-un flux continuu
-                .collect(Collectors.groupingBy(p -> p, Collectors.counting())); // obtinem un Map<Participant, Long>, unde Long e de cate ori a participat
-
-        System.out.println("\nTop 3 participants by number of attended events:");
-        participations.entrySet().stream()
-                .sorted(Map.Entry.<Participant, Long>comparingByValue().reversed())
-                .limit(3)
-                .forEach(entry -> System.out.println("• " + entry.getKey().participantName() + ": " + entry.getValue() + " events"));
-    }
-
-
-    // === 12. View all organizers and their events ===
-    public void printOrganizersAndEvents(){
-        organizerEvents.forEach((organizer, eventList) -> {
-            System.out.println("Organizers: " + organizer.organizerName());
-            eventList.forEach(e->System.out.println("    - " + e));
-        });
     }
 
     // === 13. Move an event to another day ===
@@ -573,9 +597,5 @@ public class FestivalService {
                 spendPoints(currentParticipant, cost);
             }
         }
-
     }
-
-
-
 }

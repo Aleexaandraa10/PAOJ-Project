@@ -7,8 +7,8 @@ import java.time.LocalTime;
 import java.util.List;
 
 public class CampEats extends Event {
-    private String vendorName;
-    private List<String> foodType;
+    private final String vendorName;
+    private final List<String> foodType;
     private final boolean openUntilLate;
 
     public CampEats(String eventName, LocalTime startTime, LocalTime endTime, FestivalDay day, String vendorName, List <String> foodType, boolean openUntilLate) {
@@ -16,18 +16,6 @@ public class CampEats extends Event {
         this.vendorName = vendorName;
         this.foodType = foodType;
         this.openUntilLate = openUntilLate;
-    }
-
-    public String getVendorName() {
-        return vendorName;
-    }
-
-    public List<String> getFoodType() {
-        return foodType;
-    }
-
-    public boolean isOpenUntilLate() {
-        return openUntilLate;
     }
 
     @Override
