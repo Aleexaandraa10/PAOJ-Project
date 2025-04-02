@@ -388,8 +388,52 @@ public class FestivalService {
     }
 
     // === 13. Move an event to another day ===
-    public void moveEvent(){
+    public void moveEvent(Scanner scanner){
+        if (scheduleByDay.isEmpty()) {
+            System.out.println("No events scheduled.");
+            return;
+        }
 
+        System.out.println("Available events:");
+        scheduleByDay.forEach((day, eventList) -> {
+            System.out.println("=============");
+            System.out.println("Day: " + day);
+            System.out.println("=============");
+            System.out.println("Events: ");
+            for(int i=0; i<eventList.size(); i++){
+                System.out.println((i+1) + ". " + eventList.get(i).toString());
+            }
+            System.out.println();
+        });
+        System.out.println("Please choose the day: ");
+        int dayEvent = Integer.parseInt(scanner.nextLine());
+        System.out.println("Please choose the number of the event you would like to move: ");
+        int eventIndex = Integer.parseInt(scanner.nextLine()) - 1;
+
+        if (eventIndex < 0 || eventIndex >= scheduleByDay.get(dayEvent).size()){
+            System.out.println("Invalid selection.");
+            return;
+        }
+
+        Event selectedEvent = scheduleByDay.get(dayEvent).get(eventIndex);
+
+        System.out.print("Enter the new day (1-3): ");
+        int newDay = Integer.parseInt(scanner.nextLine());
+
+        if (newDay < 1 || newDay > 3) {
+            System.out.println("Invalid day.");
+            return;
+        }
+
+        if (newDay == dayEvent) {
+            System.out.println("The event is already on that day.");
+            return;
+        }
+
+        scheduleByDay.get(dayEvent).remove(selectedEvent);
+        scheduleByDay.get(newDay).add(selectedEvent);
+        System.out.println("Event '" + selectedEvent.getEventName() + "' has been moved from Day " + dayEvent + " to Day " + newDay + ".");
+        System.out.println("If you want to see your event, please select 4 in the menu!");
     }
 
     // === 14. View festival statistics ===

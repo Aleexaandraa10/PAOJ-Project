@@ -118,7 +118,10 @@ public class Main {
                     System.out.println("Organizers and their events:");
                     festivalService.printOrganizersAndEvents();
                 }
-                case "13" -> festivalService.moveEvent();
+                case "13" -> {
+                    System.out.println("This option is only for organizers!");
+                    festivalService.moveEvent(scanner);
+                }
                 case "14" -> festivalService.viewStatistics();
                 case "0"  -> {
                     System.out.println("Thank you for visiting the Festival App. See you soon!");
