@@ -17,8 +17,9 @@ public class FestivalService {
     private final List<Event> events;
     private final Map<Integer, List<Event>> scheduleByDay; //programul evenimentelor in fiecare zi
     private final Map<Organizer, List<Event>> organizerEvents;
-    private final Map<GlobalTalks, List<Participant>> reservedSeats = new HashMap<>();
-
+    private final Map<GlobalTalks, List<Participant>> reservedSeats;
+    private final Map<Participant, Integer> participantPoints;
+    private final Map<Event, List<Participant>> eventAttended;
 
     public FestivalService() {
         this.tickets = new ArrayList<>();
@@ -26,6 +27,9 @@ public class FestivalService {
         this.events = new ArrayList<>();
         this.scheduleByDay = new HashMap<>();
         this.organizerEvents = new HashMap<>();
+        this.reservedSeats = new HashMap<>();
+        this.participantPoints = new HashMap<>();
+        this.eventAttended = new HashMap<>();
     }
 
 
@@ -59,9 +63,9 @@ public class FestivalService {
         participants.addAll(List.of(p1, p2, p3, p4, p5, p6, p7, p8));
 
 
-        // ====================================================================================
-        //                    EVENTS (every event will be added in scheduleByDay)
-        // ====================================================================================
+        // ========================================================================================
+        //                    EVENTS (every event will be added in scheduleByDay + eventAttended )
+        // ========================================================================================
 
         // ==================================
         //              CAMP EATS
@@ -92,6 +96,11 @@ public class FestivalService {
         );
         events.addAll(List.of(salty1, salty2, sweetCorner, fastFood));
 
+        eventAttended.computeIfAbsent(sweetCorner, k -> new ArrayList<>(List.of(p1, p2)));
+        eventAttended.computeIfAbsent(fastFood, k -> new ArrayList<>(List.of(p1, p3)));
+        eventAttended.computeIfAbsent(salty2, k -> new ArrayList<>(List.of(p4, p5)));
+        eventAttended.computeIfAbsent(salty1, k -> new ArrayList<>(List.of(p5, p6)));
+
 
         //computeIfAbsent(...)
         //      --> verifica daca o cheie exista deja intr-un Map
@@ -100,6 +109,7 @@ public class FestivalService {
         scheduleByDay.computeIfAbsent(1, k -> new ArrayList<>()).addAll(List.of(salty1, fastFood));
         scheduleByDay.computeIfAbsent(2, k -> new ArrayList<>()).add(salty2);
         scheduleByDay.computeIfAbsent(3, k -> new ArrayList<>()).add(sweetCorner);
+
 
         // ==================================
         //              CONCERT
@@ -145,6 +155,9 @@ public class FestivalService {
                 LocalTime.of(15, 0), LocalTime.of(23, 0), FestivalDay.DAY3, List.of(g3, g4));
         events.addAll(List.of(fz1, fz2));
 
+        eventAttended.computeIfAbsent(fz1, k -> new ArrayList<>(List.of(p7, p8, p6, p1)));
+        eventAttended.computeIfAbsent(fz1, k -> new ArrayList<>(List.of(p5, p4, p3)));
+
         scheduleByDay.computeIfAbsent(1, k -> new ArrayList<>()).add(fz1);
         scheduleByDay.computeIfAbsent(3, k -> new ArrayList<>()).add(fz2);
 
@@ -158,6 +171,10 @@ public class FestivalService {
         GlobalTalks gt3 = new GlobalTalks("Marketing 4 Festivals", LocalTime.of(12, 0),
                 LocalTime.of(13, 30), FestivalDay.DAY3, "Ioana Georgescu", "Social Media Magic", 4);
         events.addAll(List.of(gt1, gt2, gt3));
+
+        eventAttended.computeIfAbsent(gt1, k -> new ArrayList<>(List.of(p1)));
+        eventAttended.computeIfAbsent(gt2, k -> new ArrayList<>(List.of(p4, p3)));
+        eventAttended.computeIfAbsent(gt3, k -> new ArrayList<>(List.of(p7, p8)));
 
         scheduleByDay.computeIfAbsent(2, k -> new ArrayList<>()).add(gt1);
         scheduleByDay.computeIfAbsent(3, k -> new ArrayList<>()).addAll(List.of(gt2, gt3));
@@ -431,13 +448,106 @@ public class FestivalService {
         }
 
         scheduleByDay.get(dayEvent).remove(selectedEvent);
-        scheduleByDay.get(newDay).add(selectedEvent);
+        // fac asa pt ca daca puneam scheduleByDay.get(newDay).add(selectedEvent) mi-ar fi putut arunca NullPointerException
+        // in cazul in care ziua 1,2 sau 3 nu exista niciun event
+        // cu computeIfAbsent daca in ziua 3 de ex nu e niciun event, se init o noua lista si se adauga eventul
+        scheduleByDay.computeIfAbsent(newDay, k -> new ArrayList<>()).add(selectedEvent);
+
         System.out.println("Event '" + selectedEvent.getEventName() + "' has been moved from Day " + dayEvent + " to Day " + newDay + ".");
         System.out.println("If you want to see your event, please select 4 in the menu!");
     }
 
-    // === 14. View festival statistics ===
-    public void viewStatistics(){
+    // === 14. Festival Points: Earn & Spend ===
+    public void earnPoint(Participant participant, int amount){
+        // map.merge(key, value, (oldValue, newValue) -> rezultat);
+        // daca cheia nu exista --> adauga key = value
+        // daca cheia exista deja --> aplica fct (oldValue, newValue) si actualizeaza valoarea cu rezultatul
+        // Integer::sum <==> (oldVal, newVal) -> oldVal + newVal
+
+        participantPoints.merge(participant, amount, Integer::sum);
+        System.out.println(participant.participantName() + " earned " + amount + " points!");
+    }
+
+    public void spendPoints(Participant participant, int cost) {
+        // retine punctele participantului sau daca nu are, v dobandi 0 puncte
+        int current = participantPoints.getOrDefault(participant, 0);
+        if (current < cost) {
+            System.out.println("You don't have enough points to spend this points. You need " + (cost - current) + " more.");
+            return;
+        }
+        participantPoints.put(participant, current-cost); //metoda put actualizeaza valoarea asociata cheii participant
+        System.out.println("You spent " + cost + " points. Remaining: " + (current - cost));
+    }
+
+    public void calculatePoints(Scanner scanner){
+        System.out.print("Enter your ticket code: ");
+        String code = scanner.nextLine();
+
+        Participant currentParticipant = participants.stream()
+                .filter(p -> p.ticket() != null && p.ticket().getCode().equalsIgnoreCase(code))
+                .findFirst()
+                .orElse(null);
+
+        if (currentParticipant == null) {
+            System.out.println("Invalid ticket.");
+            return;
+        }
+
+        // evenimentul la care a participat currentParticipant
+        // Map.Entry = interfata interna (nested interface) din cadrul interfetei Map
+        //             --> un "tip de obiect" care reprezinta o pereche cheie-valoare dintr-o mapa
+        //eu ajung la Map.Entry folosind .entrySet() care ret. toate perechile din mapa
+        List<Event> attendedEvents = eventAttended.entrySet().stream() //.entrySet() obtine toate perechile (Event, List<Participant>) din mapa
+                .filter(entry -> entry.getValue().contains(currentParticipant)) //pastram doar acele intrari (event + participant) unde lista participantilor contine currentParticipant
+                .map(Map.Entry::getKey) //din fiecare intrare care a trecut de filtru, extragem cheia, adica ob. Event
+                .toList();
+
+        if (attendedEvents.isEmpty()) {
+            System.out.println("You haven't participated in any events yet.");
+            return;
+        }
+
+        System.out.println("\nYou’ve participated in:");
+        attendedEvents.forEach(e -> System.out.println("• " + e.getEventName()));
+
+        System.out.println("\n!Remember! First you’ve earned points from your ticket purchase (10% of ticket value).");
+        double price = currentParticipant.ticket().getPrice();
+        int ticketPoints = (int)(price * 0.10);
+        earnPoint(currentParticipant, ticketPoints);
+
+        for (Event event : attendedEvents) {
+            if (event instanceof FunZone) {
+                earnPoint(currentParticipant, 15);
+            } else if (event instanceof GlobalTalks){
+                earnPoint(currentParticipant, 20);
+            } else if (event instanceof CampEats){
+                earnPoint(currentParticipant, 10);
+            }
+        }
+
+        int total = participantPoints.getOrDefault(currentParticipant, 0);
+        System.out.println("Total points: " + total);
+
+        Map<String, Integer> prizes = Map.of(
+                "Festival Badge", 50,
+                "Tote Bag", 75,
+                "VIP Lounge Access", 120
+        );
+
+        System.out.println("\nAvailable Prizes:");
+        prizes.forEach((prize, cost) -> System.out.println("• " + prize + " — " + cost + " points"));
+
+        System.out.print("\nWant to redeem a prize? Enter its name or press Enter to skip: ");
+        String chosenPrize = scanner.nextLine();
+
+        if (!chosenPrize.isBlank()) {
+            if (!prizes.containsKey(chosenPrize)) {
+                System.out.println("Prize not found.");
+            } else {
+                int cost = prizes.get(chosenPrize);
+                spendPoints(currentParticipant, cost);
+            }
+        }
 
     }
 

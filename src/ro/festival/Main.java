@@ -31,21 +31,17 @@ public class Main {
             // Event & schedule
             System.out.println("4.  View full schedule for a specific day ordered by start time");
             System.out.println("5.  Reserve a seat for a limited-capacity event");
-
-
             System.out.println("6.  Order all events by start time");
             System.out.println("7.  Group events by type");
             System.out.println("8.  Find events that start after a specific time");
-
-            // Event types
             System.out.println("9.  Show all DJ sets on the main stage");
             System.out.println("10. Show all-night games in FunZone");
             System.out.println("11. Join a competition in the FunZone");
 
-            // Organizers
+            // Organizers + points
             System.out.println("12. View all organizers and their events");
             System.out.println("13. Move an event to another day");
-            System.out.println("14. View festival statistics");
+            System.out.println("14. Festival Points: Earn & Spend");
 
 
             // Exit
@@ -122,7 +118,13 @@ public class Main {
                     System.out.println("This option is only for organizers!");
                     festivalService.moveEvent(scanner);
                 }
-                case "14" -> festivalService.viewStatistics();
+                case "14" -> {
+                    System.out.println("Festival Points System:");
+                    System.out.println("- Earn points by purchasing tickets (10% of ticket value)");
+                    System.out.println("- Gain extra points by attending CampEats, GlobalTalks, or FunZone events");
+                    System.out.println("- Spend points on exclusive prizes!");
+                    festivalService.calculatePoints(scanner);
+                }
                 case "0"  -> {
                     System.out.println("Thank you for visiting the Festival App. See you soon!");
                     running = false;

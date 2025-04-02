@@ -10,6 +10,7 @@ public class Ticket {
 
     }
     public String getCode() { return code; }
+    public double getPrice() { return price; }
 
 
     @Override
