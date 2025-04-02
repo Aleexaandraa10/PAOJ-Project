@@ -7,8 +7,6 @@ import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) {
-        // !!!!!!!!! VEZI CA AI PUTEA FOLOSI JUNIT !!!!!!!!!!!!!!!
-        // mai intai implementeaza tu niste functionalitati si mai vezi dupa
         Scanner scanner = new Scanner(System.in);
         FestivalService festivalService = new FestivalService();
         festivalService.initDemoData();
