@@ -391,10 +391,35 @@ public class FestivalService {
                 .forEach(System.out::println);
     }
 
-    // === 11. Join a competition in the FunZone ===
-    public void joinCompetition(){
+    // === 11. View participation stats (top participants & event types) ===
+    public void viewParticipationInsights() {
+        System.out.println("----- Festival Participation Insights -----");
 
+        String mostCommonType = events.stream()
+                .collect(Collectors.groupingBy(
+                        e -> e.getClass().getSimpleName(),     // grupăm după tipul clasei (ex: "Concert")
+                        Collectors.counting()                        //  numărăm câte apariții are fiecare tip
+                )) //pana aici am facut Map<String, Long> unde String este tipul ev si Long este nr de aparitii
+                .entrySet().stream()                                 //  convertim mapa într-un stream de entry-uri
+                .max(Map.Entry.comparingByValue())        //  căutăm entry-ul cu cea mai mare valoare (adică cel mai frecvent)
+                .map(Map.Entry::getKey)                   //  extragem cheia (adică tipul clasei)
+                .orElse("N/A");                     //  dacă nu există niciun element, returnăm "N/A"
+
+
+        System.out.println("\nMost frequent event type: " + mostCommonType);
+
+        // === Participanții cu cele mai multe participări ===
+        Map<Participant, Long> participations = eventAttended.values().stream()//.values() ia doar List<Participant> din perechea (cheie, val)
+                .flatMap(List::stream) //aplatizam toate listele de participanti intr-un flux continuu
+                .collect(Collectors.groupingBy(p -> p, Collectors.counting())); // obtinem un Map<Participant, Long>, unde Long e de cate ori a participat
+
+        System.out.println("\nTop 3 participants by number of attended events:");
+        participations.entrySet().stream()
+                .sorted(Map.Entry.<Participant, Long>comparingByValue().reversed())
+                .limit(3)
+                .forEach(entry -> System.out.println("• " + entry.getKey().participantName() + ": " + entry.getValue() + " events"));
     }
+
 
     // === 12. View all organizers and their events ===
     public void printOrganizersAndEvents(){

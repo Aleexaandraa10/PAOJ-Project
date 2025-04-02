@@ -23,12 +23,9 @@ public class Main {
             System.out.println("What would you like to do?");
             System.out.println("-------------------------------------------------");
 
-            // Ticket related
             System.out.println("1.  Buy a ticket");
             System.out.println("2.  View participants under 25");
             System.out.println("3.  View all tickets (including discounts)");
-
-            // Event & schedule
             System.out.println("4.  View full schedule for a specific day ordered by start time");
             System.out.println("5.  Reserve a seat for a limited-capacity event");
             System.out.println("6.  Order all events by start time");
@@ -36,13 +33,10 @@ public class Main {
             System.out.println("8.  Find events that start after a specific time");
             System.out.println("9.  Show all DJ sets on the main stage");
             System.out.println("10. Show all-night games in FunZone");
-            System.out.println("11. Join a competition in the FunZone");
-
-            // Organizers + points
+            System.out.println("11. View participation stats (top participants & event types)");
             System.out.println("12. View all organizers and their events");
             System.out.println("13. Move an event to another day");
             System.out.println("14. Festival Points: Earn & Spend");
-
 
             // Exit
             System.out.println("0.  Exit the application");
@@ -109,7 +103,7 @@ public class Main {
                     System.out.println("Games in FunZone open all night:");
                     festivalService.printAllNightGames();
                 }
-                case "11" -> festivalService.joinCompetition();
+                case "11" -> festivalService.viewParticipationInsights();
                 case "12" -> {
                     System.out.println("Organizers and their events:");
                     festivalService.printOrganizersAndEvents();
