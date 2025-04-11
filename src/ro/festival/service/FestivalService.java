@@ -229,7 +229,7 @@ public class FestivalService {
     public void printParticipantsUnder25(){
         participants.stream()
                 .filter(p-> p.age()<25)
-                .forEach(p->System.out.println(p.participantName() + " (" + p.age() + "years old)"));
+                .forEach(p->System.out.println(p.participantName() + " (" + p.age() + " years old)"));
     }
 
     // === 3. View participation stats (top participants & event types) ===
@@ -408,16 +408,6 @@ public class FestivalService {
     }
 
     // === 9. Festival Points: Earn & Spend ===
-    private void earnPoint(Participant participant, int amount){
-        // map.merge(key, value, (oldValue, newValue) -> rezultat);
-        // daca cheia nu exista --> adauga key = value
-        // daca cheia exista deja --> aplica fct (oldValue, newValue) si actualizeaza valoarea cu rezultatul
-        // Integer::sum <==> (oldVal, newVal) -> oldVal + newVal
-
-        participantPoints.merge(participant, amount, Integer::sum);
-        System.out.println(participant.participantName() + " earned " + amount + " points!");
-    }
-
     private void spendPoints(Participant participant, int cost) {
         // retine punctele participantului sau daca nu are, v dobandi 0 puncte
         int current = participantPoints.getOrDefault(participant, 0);
@@ -556,7 +546,7 @@ public class FestivalService {
         System.out.println("\n🏆 The Mini-Tournament Winner is: " + winner.participantName() + "! 🏆");
 
         lastTournamentWinner = winner;
-        earnPoint(winner, 50);
+        System.out.println(winner.participantName() +" earned 50 points!");
         System.out.println("\nWinner's ticket code: " + winner.ticket().getCode());
     }
 
@@ -723,7 +713,7 @@ public class FestivalService {
         scheduleByDay.computeIfAbsent(newDay, k -> new ArrayList<>()).add(selectedEvent);
 
         System.out.println("Event '" + selectedEvent.getEventName() + "' has been moved from Day " + dayEvent + " to Day " + newDay + ".");
-        System.out.println("If you want to see your event, please select 4 in the menu!");
+        System.out.println("If you want to see your event, please select 1 in the menu!");
     }
 
 }
