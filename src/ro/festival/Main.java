@@ -17,56 +17,116 @@ public class Main {
         boolean running = true;
 
         while (running) {
-            System.out.println("=================================================");
-            System.out.println("What would you like to do?");
-            System.out.println("-------------------------------------------------");
+            System.out.println("Please select your role:");
+            System.out.println("1 - Participant");
+            System.out.println("2 - Organizer");
+            System.out.println("0 - Exit the application");
+            System.out.print("Enter your choice: ");
+            String roleChoice = scanner.nextLine();
+            System.out.println();
 
+            switch (roleChoice) {
+                case "1" -> handleParticipantMenu(scanner, festivalService);
+                case "2" -> handleOrganizerMenu(scanner, festivalService);
+                case "0" -> {
+                    System.out.println("Thank you for visiting the Festival App. See you soon!");
+                    running = false;
+                }
+                default -> System.out.println("Invalid option. Please try again.\n");
+            }
+        }
+
+        scanner.close();
+    }
+
+    private static void handleParticipantMenu(Scanner scanner, FestivalService festivalService) {
+        boolean inParticipantMenu = true;
+
+        while (inParticipantMenu) {
+            System.out.println("============= Participant Menu =============");
             // Interrogations
             System.out.println("1.  View all tickets (including discounts)");
             System.out.println("2.  View participants under 25");
             System.out.println("3.  View participation statistics (top participants & event types)");
-            System.out.println("4.  View full schedule for a specific day ordered by start time");
-            System.out.println("5.  Show all DJ sets on the main stage");
-            System.out.println("6.  Show all-night games in FunZone");
-            System.out.println("7.  View all organizers and their events");
-
+            System.out.println("4.  Show all DJ sets on the main stage");
+            System.out.println("5.  Show all-night games in FunZone");
             // Actions
-            System.out.println("8.  Buy a ticket");
-            System.out.println("9.  Group events by type");
-            System.out.println("10. Order all events by start time");
-            System.out.println("11. Find events that start after a specific time");
-            System.out.println("12. Reserve a seat for a limited-capacity event");
-            System.out.println("13. Move an event to another day");
-            System.out.println("14. Festival Points: Earn & Spend");
-
-            // Exit
-            System.out.println("0. Exit the application");
-            System.out.println("=================================================");
+            System.out.println("6.  Buy a ticket");
+            System.out.println("7. Reserve a seat for a limited-capacity event");
+            System.out.println("8. Find events that start after a specific time");
+            System.out.println("9. Festival Points: Earn & Spend");
+            System.out.println("0.  Back to role selection");
+            System.out.println("============================================");
 
             System.out.print("Enter your choice: ");
-            String input = scanner.nextLine();
+            String choice = scanner.nextLine();
             System.out.println();
 
-            switch (input) {
-                case "1" -> {
-                    System.out.println("All tickets issued:");
-                    festivalService.printAllTickets();
-                }
-                case "2" -> {
-                    System.out.println("Participants under 25:");
-                    festivalService.printParticipantsUnder25();
-                }
+            switch (choice) {
+                case "1" -> festivalService.printAllTickets();
+                case "2" -> festivalService.printParticipantsUnder25();
                 case "3" -> festivalService.viewParticipationInsights();
                 case "4" -> {
+                    System.out.println("DJ sets on the main stage:");
+                    festivalService.printDJOnMainStage();
+                }
+                case "5" -> {
+                    System.out.println("Games in FunZone open all night:");
+                    festivalService.printAllNightGames();
+                }
+                case "6" -> festivalService.buyTicketInteractively(scanner);
+                case "7" -> {
+                    System.out.println("Reserve a seat for a limited-capacity event:");
+                    festivalService.reserveSeat_GlobalTalk(scanner);
+                }
+                case "8" -> {
+                    System.out.print("Enter time (HH:mm): ");
+                    LocalTime time = LocalTime.parse(scanner.nextLine());
+                    System.out.println("Events starting after " + time + ":");
+                    festivalService.printEventsByStartTime(time);
+                }
+                case "9" -> {
+                    System.out.println("Festival Points System:");
+                    System.out.println("- Earn points by purchasing tickets (10% of ticket value)");
+                    System.out.println("- Gain extra points by attending CampEats, GlobalTalks, or FunZone events");
+                    System.out.println("- Spend points on exclusive prizes!");
+                    festivalService.calculatePoints(scanner);
+                }
+                case "0" -> inParticipantMenu = false;
+                default -> System.out.println("Invalid option. Please try again.\n");
+            }
+            System.out.println();
+        }
+    }
+
+    private static void handleOrganizerMenu(Scanner scanner, FestivalService festivalService) {
+        boolean inOrganizerMenu = true;
+
+        while (inOrganizerMenu) {
+            System.out.println("============== Organizer Menu ==============");
+            // Interrogations
+            System.out.println("1.  View full schedule for a specific day ordered by start time");
+            System.out.println("2.  View all organizers and their events");
+            // Actions
+            System.out.println("3.  Group events by type");
+            System.out.println("4. Order all events by start time");
+            System.out.println("5. Move an event to another day");
+            System.out.println("0.  Back to role selection");
+            System.out.println("============================================");
+
+            System.out.print("Enter your choice: ");
+            String choice = scanner.nextLine();
+            System.out.println();
+
+            switch (choice) {
+                case "1" -> {
                     System.out.println("What day would you like to view?");
                     System.out.println("1 - Day 1");
                     System.out.println("2 - Day 2");
                     System.out.println("3 - Day 3");
                     System.out.print("Your choice: ");
-
                     try {
                         int day = Integer.parseInt(scanner.nextLine());
-
                         if (day >= 1 && day <= 3) {
                             festivalService.printScheduleForDay(day);
                         } else {
@@ -76,56 +136,24 @@ public class Main {
                         System.out.println("Please enter a valid number (1, 2, or 3).");
                     }
                 }
-                case "5"  -> {
-                    System.out.println("DJ sets on the main stage:");
-                    festivalService.printDJOnMainStage();
-                }
-                case "6" -> {
-                    System.out.println("Games in FunZone open all night:");
-                    festivalService.printAllNightGames();
-                }
-                case "7" -> {
+                case "2" -> {
                     System.out.println("Organizers and their events:");
                     festivalService.printOrganizersAndEvents();
                 }
-                case "8" -> festivalService.buyTicketInteractively(scanner);
-                case "9" -> {
-                    System.out.println("Events grouped by type:");
-                    festivalService.groupEventsByType();
-                }
-                case "10" -> {
+                case "3" -> festivalService.groupEventsByType();
+                case "4" -> {
                     System.out.println("Events ordered by start time:");
                     festivalService.printEventsOrderedByStartTime();
                 }
-                case "11" -> {
-                    System.out.print("Enter time (HH:mm): ");
-                    LocalTime time = LocalTime.parse(scanner.nextLine());
-                    System.out.println("Events starting after " + time + ":");
-                    festivalService.printEventsByStartTime(time);
-                }
-                case "12" -> {
-                    System.out.println("Reserve a seat for a limited-capacity event:");
-                    festivalService. reserveSeat_GlobalTalk(scanner);
-                }
-                case "13" -> {
-                    System.out.println("This option is only for organizers!");
+
+                case "5" -> {
+                    System.out.println("Move an event to another day:");
                     festivalService.moveEvent(scanner);
                 }
-                case "14" -> {
-                    System.out.println("Festival Points System:");
-                    System.out.println("- Earn points by purchasing tickets (10% of ticket value)");
-                    System.out.println("- Gain extra points by attending CampEats, GlobalTalks, or FunZone events");
-                    System.out.println("- Spend points on exclusive prizes!");
-                    festivalService.calculatePoints(scanner);
-                }
-                case "0"  -> {
-                    System.out.println("Thank you for visiting the Festival App. See you soon!");
-                    running = false;
-                }
+                case "0" -> inOrganizerMenu = false;
                 default -> System.out.println("Invalid option. Please try again.\n");
             }
             System.out.println();
         }
-        scanner.close();
     }
 }

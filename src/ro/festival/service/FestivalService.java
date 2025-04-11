@@ -210,7 +210,7 @@ public class FestivalService {
 
 
     // =================================================================================================================
-    //                                           APPLICATION FUNCTIONALITIES
+    //                                           APPLICATION FUNCTIONALITIES - PARTICIPANTS
     // =================================================================================================================
     // === 1. View all tickets ===
     public void printAllTickets(){
@@ -257,24 +257,7 @@ public class FestivalService {
                 .forEach(entry -> System.out.println("• " + entry.getKey().participantName() + ": " + entry.getValue() + " events"));
     }
 
-    // === 4. View full schedule for a specific day ===
-    public void printScheduleForDay(int day) {
-        FestivalDay selectedDay = FestivalDay.valueOf("DAY" + day);
-
-        List<Event> dayEvents = scheduleByDay.getOrDefault(day, new ArrayList<>());
-
-        if (dayEvents.isEmpty()) {
-            System.out.println("No events scheduled for " + selectedDay);
-            return;
-        }
-
-        System.out.println("Events scheduled for " + selectedDay + ":");
-        dayEvents.stream()
-                .sorted(Comparator.comparing(Event::getStartTime))
-                .forEach(System.out::println);
-    }
-
-    // === 5. Show all DJ sets on the main stage ===
+    // === 4. Show all DJ sets on the main stage ===
     public void printDJOnMainStage(){
         events.stream()
                 .filter(e-> e instanceof DJ) //true doar daca e este un DJ
@@ -283,7 +266,7 @@ public class FestivalService {
                 .forEach(System.out::println);
     }
 
-    // === 6. Show all night-games in FunZone ===
+    // === 5. Show all night-games in FunZone ===
     public void printAllNightGames(){
         events.stream()
                 .filter( e -> e instanceof FunZone)
@@ -294,15 +277,7 @@ public class FestivalService {
                 .forEach(System.out::println);
     }
 
-    // === 7. View all organizers and their events ===
-    public void printOrganizersAndEvents(){
-        organizerEvents.forEach((organizer, eventList) -> {
-            System.out.println("Organizers: " + organizer.organizerName());
-            eventList.forEach(e->System.out.println("    - " + e));
-        });
-    }
-
-    // === 8. Buy a ticket + add participant ===
+    // === 6. Buy a ticket + add participant ===
     public void buyTicketInteractively(Scanner scanner) {
         System.out.println("Let's buy you a ticket.");
 
@@ -362,39 +337,7 @@ public class FestivalService {
         System.out.println("Ticket details:\n" + ticket);
     }
 
-    // === 9. Group events by type ===
-    public void groupEventsByType(){
-        Map<String, List<Event>> grouped = events.stream()
-                .collect(Collectors.groupingBy(e->e.getClass().getSimpleName()));
-
-        // pentru fiecare el. e vreau sa fie grupat dupa e.getClass().getSimpleName(), deci se creeaza automat map
-        // String din cheie este rezultatul e.getClass().getSimpleName()
-        //.collect() este o op terminala intr-un Stream, care transforma fluxul de date intr-o colectie noua
-        // .collect() = ok, am parcurs stream-ul, acum vreau sa strang totul intr-un rezultat final
-
-        grouped.forEach((type, eventList) -> {
-            System.out.println("=== " + type + " ===");
-            eventList.forEach(System.out::println);
-        });
-        // .getClass() --> Concert.class
-        // .getSimpleName() --> Concert
-    }
-
-    // === 10. Order all events by start time ===
-    public void printEventsOrderedByStartTime() {
-        events.stream()
-                .sorted(Comparator.comparing(Event::getStartTime))
-                .forEach(System.out::println);
-    }
-
-    // === 11. Find events that start after a specific time ===
-    public void printEventsByStartTime(LocalTime time){
-        events.stream()
-                .filter(e -> e.getStartTime().isAfter(time))
-                .forEach(System.out::println);
-    }
-
-    // === 12. Reserve a seat for a limited-capacity event ===
+    // === 7. Reserve a seat for a limited-capacity event ===
     public void reserveSeat_GlobalTalk(Scanner scanner){
         List<GlobalTalks> talks = events.stream()
                 .filter(e -> e instanceof GlobalTalks)
@@ -453,60 +396,14 @@ public class FestivalService {
 
     }
 
-    // === 13. Move an event to another day ===
-    public void moveEvent(Scanner scanner){
-        if (scheduleByDay.isEmpty()) {
-            System.out.println("No events scheduled.");
-            return;
-        }
-
-        System.out.println("Available events:");
-        scheduleByDay.forEach((day, eventList) -> {
-            System.out.println("=============");
-            System.out.println("Day: " + day);
-            System.out.println("=============");
-            System.out.println("Events: ");
-            for(int i=0; i<eventList.size(); i++){
-                System.out.println((i+1) + ". " + eventList.get(i).toString());
-            }
-            System.out.println();
-        });
-        System.out.println("Please choose the day: ");
-        int dayEvent = Integer.parseInt(scanner.nextLine());
-        System.out.println("Please choose the number of the event you would like to move: ");
-        int eventIndex = Integer.parseInt(scanner.nextLine()) - 1;
-
-        if (eventIndex < 0 || eventIndex >= scheduleByDay.get(dayEvent).size()){
-            System.out.println("Invalid selection.");
-            return;
-        }
-
-        Event selectedEvent = scheduleByDay.get(dayEvent).get(eventIndex);
-
-        System.out.print("Enter the new day (1-3): ");
-        int newDay = Integer.parseInt(scanner.nextLine());
-
-        if (newDay < 1 || newDay > 3) {
-            System.out.println("Invalid day.");
-            return;
-        }
-
-        if (newDay == dayEvent) {
-            System.out.println("The event is already on that day.");
-            return;
-        }
-
-        scheduleByDay.get(dayEvent).remove(selectedEvent);
-        // fac asa pt ca daca puneam scheduleByDay.get(newDay).add(selectedEvent) mi-ar fi putut arunca NullPointerException
-        // in cazul in care ziua 1,2 sau 3 nu exista niciun event
-        // cu computeIfAbsent daca in ziua 3 de ex nu e niciun event, se init o noua lista si se adauga eventul
-        scheduleByDay.computeIfAbsent(newDay, k -> new ArrayList<>()).add(selectedEvent);
-
-        System.out.println("Event '" + selectedEvent.getEventName() + "' has been moved from Day " + dayEvent + " to Day " + newDay + ".");
-        System.out.println("If you want to see your event, please select 4 in the menu!");
+    // === 8. Find events that start after a specific time ===
+    public void printEventsByStartTime(LocalTime time){
+        events.stream()
+                .filter(e -> e.getStartTime().isAfter(time))
+                .forEach(System.out::println);
     }
 
-    // === 14. Festival Points: Earn & Spend ===
+    // === 9. Festival Points: Earn & Spend ===
     public void earnPoint(Participant participant, int amount){
         // map.merge(key, value, (oldValue, newValue) -> rezultat);
         // daca cheia nu exista --> adauga key = value
@@ -598,4 +495,114 @@ public class FestivalService {
             }
         }
     }
+
+    // =================================================================================================================
+    //                                           APPLICATION FUNCTIONALITIES - ORGANIZERS
+    // =================================================================================================================
+
+    // === 1. View full schedule for a specific day ===
+    public void printScheduleForDay(int day) {
+        FestivalDay selectedDay = FestivalDay.valueOf("DAY" + day);
+
+        List<Event> dayEvents = scheduleByDay.getOrDefault(day, new ArrayList<>());
+
+        if (dayEvents.isEmpty()) {
+            System.out.println("No events scheduled for " + selectedDay);
+            return;
+        }
+
+        System.out.println("Events scheduled for " + selectedDay + ":");
+        dayEvents.stream()
+                .sorted(Comparator.comparing(Event::getStartTime))
+                .forEach(System.out::println);
+    }
+
+    // === 2. View all organizers and their events ===
+    public void printOrganizersAndEvents(){
+        organizerEvents.forEach((organizer, eventList) -> {
+            System.out.println("Organizers: " + organizer.organizerName());
+            eventList.forEach(e->System.out.println("    - " + e));
+        });
+    }
+
+    // === 3. Group events by type ===
+    public void groupEventsByType(){
+        Map<String, List<Event>> grouped = events.stream()
+                .collect(Collectors.groupingBy(e->e.getClass().getSimpleName()));
+
+        // pentru fiecare el. e vreau sa fie grupat dupa e.getClass().getSimpleName(), deci se creeaza automat map
+        // String din cheie este rezultatul e.getClass().getSimpleName()
+        //.collect() este o op terminala intr-un Stream, care transforma fluxul de date intr-o colectie noua
+        // .collect() = ok, am parcurs stream-ul, acum vreau sa strang totul intr-un rezultat final
+
+        grouped.forEach((type, eventList) -> {
+            System.out.println("\n=== " + type + " ===");
+            eventList.forEach(System.out::println);
+        });
+        // .getClass() --> Concert.class
+        // .getSimpleName() --> Concert
+    }
+
+    // === 4. Order all events by start time ===
+    public void printEventsOrderedByStartTime() {
+        events.stream()
+                .sorted(Comparator.comparing(Event::getStartTime))
+                .forEach(System.out::println);
+    }
+
+
+
+    // === 5. Move an event to another day ===
+    public void moveEvent(Scanner scanner){
+        if (scheduleByDay.isEmpty()) {
+            System.out.println("No events scheduled.");
+            return;
+        }
+
+        System.out.println("Available events:");
+        scheduleByDay.forEach((day, eventList) -> {
+            System.out.println("=============");
+            System.out.println("Day: " + day);
+            System.out.println("=============");
+            System.out.println("Events: ");
+            for(int i=0; i<eventList.size(); i++){
+                System.out.println((i+1) + ". " + eventList.get(i).toString());
+            }
+            System.out.println();
+        });
+        System.out.println("Please choose the day: ");
+        int dayEvent = Integer.parseInt(scanner.nextLine());
+        System.out.println("Please choose the number of the event you would like to move: ");
+        int eventIndex = Integer.parseInt(scanner.nextLine()) - 1;
+
+        if (eventIndex < 0 || eventIndex >= scheduleByDay.get(dayEvent).size()){
+            System.out.println("Invalid selection.");
+            return;
+        }
+
+        Event selectedEvent = scheduleByDay.get(dayEvent).get(eventIndex);
+
+        System.out.print("Enter the new day (1-3): ");
+        int newDay = Integer.parseInt(scanner.nextLine());
+
+        if (newDay < 1 || newDay > 3) {
+            System.out.println("Invalid day.");
+            return;
+        }
+
+        if (newDay == dayEvent) {
+            System.out.println("The event is already on that day.");
+            return;
+        }
+
+        scheduleByDay.get(dayEvent).remove(selectedEvent);
+        // fac asa pt ca daca puneam scheduleByDay.get(newDay).add(selectedEvent) mi-ar fi putut arunca NullPointerException
+        // in cazul in care ziua 1,2 sau 3 nu exista niciun event
+        // cu computeIfAbsent daca in ziua 3 de ex nu e niciun event, se init o noua lista si se adauga eventul
+        scheduleByDay.computeIfAbsent(newDay, k -> new ArrayList<>()).add(selectedEvent);
+
+        System.out.println("Event '" + selectedEvent.getEventName() + "' has been moved from Day " + dayEvent + " to Day " + newDay + ".");
+        System.out.println("If you want to see your event, please select 4 in the menu!");
+    }
+
 }
