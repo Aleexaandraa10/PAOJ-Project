@@ -3,6 +3,7 @@ import ro.festival.model.*;
 import ro.festival.model.eventtypes.*;
 import java.time.LocalTime;
 import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
 // idee de baza: daca un atribut nu tb sa se modifice dupa instantiere, il fac final
@@ -23,6 +24,9 @@ public class FestivalService {
     private final Map<GlobalTalks, List<Participant>> reservedSeats;
     private final Map<Participant, Integer> participantPoints;
     private final Map<Event, List<Participant>> eventAttended;
+
+    // pt fct 9, sa adun punctele participantului si daca a participat la un turneu din joc in Fun Zone
+    private static Participant lastTournamentWinner = null;
 
     public FestivalService() {
         this.tickets = new ArrayList<>();
@@ -404,7 +408,7 @@ public class FestivalService {
     }
 
     // === 9. Festival Points: Earn & Spend ===
-    public void earnPoint(Participant participant, int amount){
+    private void earnPoint(Participant participant, int amount){
         // map.merge(key, value, (oldValue, newValue) -> rezultat);
         // daca cheia nu exista --> adauga key = value
         // daca cheia exista deja --> aplica fct (oldValue, newValue) si actualizeaza valoarea cu rezultatul
@@ -414,7 +418,7 @@ public class FestivalService {
         System.out.println(participant.participantName() + " earned " + amount + " points!");
     }
 
-    public void spendPoints(Participant participant, int cost) {
+    private void spendPoints(Participant participant, int cost) {
         // retine punctele participantului sau daca nu are, v dobandi 0 puncte
         int current = participantPoints.getOrDefault(participant, 0);
         if (current < cost) {
@@ -455,24 +459,27 @@ public class FestivalService {
 
         System.out.println("\nYou’ve participated in:");
         attendedEvents.forEach(e -> System.out.println("• " + e.getEventName()));
+        if (lastTournamentWinner != null && lastTournamentWinner.equals(currentParticipant)){
+            System.out.println("• MiniTournament (winner)");
+        }
 
-        System.out.println("\n!Remember! First you’ve earned points from your ticket purchase (10% of ticket value).");
-        double price = currentParticipant.ticket().getPrice();
-        int ticketPoints = (int)(price * 0.10);
-        earnPoint(currentParticipant, ticketPoints);
+        int eventPoints = 0;
+        int ticketPoints = (int) (currentParticipant.ticket().getPrice() * 0.10);
+        eventPoints += ticketPoints;
 
         for (Event event : attendedEvents) {
             if (event instanceof FunZone) {
-                earnPoint(currentParticipant, 15);
-            } else if (event instanceof GlobalTalks){
-                earnPoint(currentParticipant, 20);
-            } else if (event instanceof CampEats){
-                earnPoint(currentParticipant, 10);
+                eventPoints += 15;
+            } else if (event instanceof GlobalTalks) {
+                eventPoints += 20;
+            } else if (event instanceof CampEats) {
+                eventPoints += 10;
             }
         }
 
-        int total = participantPoints.getOrDefault(currentParticipant, 0);
-        System.out.println("Total points: " + total);
+        System.out.println("Points from ticket and events: " + eventPoints);
+        System.out.println("Bonus from tournament: 50");
+        System.out.println("Total points: " + (eventPoints + 50));
 
         Map<String, Integer> prizes = Map.of(
                 "Festival Badge", 50,
@@ -494,6 +501,120 @@ public class FestivalService {
                 spendPoints(currentParticipant, cost);
             }
         }
+    }
+
+    // === 10. Join the FunZone Mini-Tournament ===
+    public void registerAndStartMiniTournament(Scanner scanner) {
+        System.out.print("Enter your ticket code to join the tournament: ");
+        String code = scanner.nextLine();
+
+        Participant userParticipant = participants.stream()
+                .filter(p -> p.ticket() != null && p.ticket().getCode().equalsIgnoreCase(code))
+                .findFirst()
+                .orElse(null);
+
+        if (userParticipant == null) {
+            System.out.println("Invalid ticket code. Registration failed.");
+            return;
+        }
+
+        System.out.print("How many total participants (including you) do you want in the tournament? (min 3): ");
+        int total;
+        try {
+            total = Integer.parseInt(scanner.nextLine());
+        } catch (NumberFormatException e) {
+            System.out.println("Invalid number.");
+            return;
+        }
+
+        if (total < 3) {
+            System.out.println("Minimum number of participants is 3.");
+            return;
+        }
+
+        List<Participant> others = participants.stream()
+                .filter(p -> !p.equals(userParticipant))
+                .collect(Collectors.toList());
+
+        if (others.size() < total - 1) {
+            System.out.println("Not enough participants in the system to form a tournament of that size.");
+            return;
+        }
+
+        Collections.shuffle(others);
+        List<Participant> selectedOpponents = others.subList(0, total - 1);
+
+        List<Participant> tournamentPlayers = new ArrayList<>();
+        tournamentPlayers.add(userParticipant);
+        tournamentPlayers.addAll(selectedOpponents);
+
+        System.out.println("\nYou have successfully joined the FunZone Mini-Tournament!");
+        System.out.println("Here are the participants:");
+        tournamentPlayers.forEach(p -> System.out.println("• " + p.participantName()));
+
+        Participant winner = runTournamentRoundFlexible(tournamentPlayers, "First Round");
+        System.out.println("\n🏆 The Mini-Tournament Winner is: " + winner.participantName() + "! 🏆");
+
+        lastTournamentWinner = winner;
+        earnPoint(winner, 50);
+        System.out.println("\nWinner's ticket code: " + winner.ticket().getCode());
+    }
+
+    private Participant runTournamentRoundFlexible(List<Participant> players, String roundName) {
+        if (players.size() == 1) return players.getFirst();
+
+        System.out.println("\n-- " + roundName + " --");
+        List<Participant> winners = new ArrayList<>();
+
+        int i = 0;
+        while (i < players.size()) {
+            int remaining = players.size() - i;
+
+            Participant p1 = players.get(i);
+            Participant p2 = players.get(i + 1);
+            if (remaining == 3) {
+                Participant p3 = players.get(i + 2);
+
+                int s1 = ThreadLocalRandom.current().nextInt(0, 100);
+                int s2 = ThreadLocalRandom.current().nextInt(0, 100);
+                int s3 = ThreadLocalRandom.current().nextInt(0, 100);
+
+                Map<Participant, Integer> scores = Map.of(p1, s1, p2, s2, p3, s3);
+                Participant best = scores.entrySet().stream()
+                        .max(Map.Entry.comparingByValue())
+                        .get().getKey();
+
+                System.out.printf("3-player round: %s (%d), %s (%d), %s (%d) → Winner: %s\n",
+                        p1.participantName(), s1,
+                        p2.participantName(), s2,
+                        p3.participantName(), s3,
+                        best.participantName());
+
+                winners.add(best);
+                i += 3;
+            } else {
+                int score1 = ThreadLocalRandom.current().nextInt(0, 100);
+                int score2 = ThreadLocalRandom.current().nextInt(0, 100);
+
+                Participant winner = score1 >= score2 ? p1 : p2;
+                winners.add(winner);
+
+                System.out.printf("%s (%d) vs %s (%d) → Winner: %s\n",
+                        p1.participantName(), score1,
+                        p2.participantName(), score2,
+                        winner.participantName());
+                i += 2;
+            }
+        }
+
+        String nextRound = switch (winners.size()) {
+            case 4 -> "Semifinals";
+            case 3 -> "3-Player Round";
+            case 2 -> "Final";
+            default -> "Next Round";
+        };
+
+        return runTournamentRoundFlexible(winners, nextRound);
     }
 
     // =================================================================================================================

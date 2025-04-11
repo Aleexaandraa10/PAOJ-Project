@@ -52,9 +52,10 @@ public class Main {
             System.out.println("5.  Show all-night games in FunZone");
             // Actions
             System.out.println("6.  Buy a ticket");
-            System.out.println("7. Reserve a seat for a limited-capacity event");
-            System.out.println("8. Find events that start after a specific time");
-            System.out.println("9. Festival Points: Earn & Spend");
+            System.out.println("7.  Reserve a seat for a limited-capacity event");
+            System.out.println("8.  Find events that start after a specific time");
+            System.out.println("9.  Festival Points: Earn & Spend");
+            System.out.println("10. Join the FunZone Mini-Tournament");
             System.out.println("0.  Back to role selection");
             System.out.println("============================================");
 
@@ -92,6 +93,7 @@ public class Main {
                     System.out.println("- Spend points on exclusive prizes!");
                     festivalService.calculatePoints(scanner);
                 }
+                case "10" -> festivalService.registerAndStartMiniTournament(scanner);
                 case "0" -> inParticipantMenu = false;
                 default -> System.out.println("Invalid option. Please try again.\n");
             }
@@ -109,8 +111,8 @@ public class Main {
             System.out.println("2.  View all organizers and their events");
             // Actions
             System.out.println("3.  Group events by type");
-            System.out.println("4. Order all events by start time");
-            System.out.println("5. Move an event to another day");
+            System.out.println("4.  Order all events by start time");
+            System.out.println("5.  Move an event to another day");
             System.out.println("0.  Back to role selection");
             System.out.println("============================================");
 
