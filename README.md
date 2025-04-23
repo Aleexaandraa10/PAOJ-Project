@@ -1,92 +1,93 @@
-# Aplicația Festival App 
 
-Această aplicație Java simulează o platformă de gestionare a unui festival de tip UNTOLD/Neversea, oferind atât funcționalități pentru participanți, cât și pentru organizatori. Aplicația este interactivă, bazată pe consolă și include funcții reale, dinamice și gamificate.
+# 🎉 Festival App
 
-## Scopul aplicației
+This Java application simulates a management platform for a large-scale music festival like UNTOLD or Neversea. It offers interactive features for both participants and organizers, with a gamified and dynamic console-based interface.
 
-Festival App permite:
+## 🎯 Purpose of the Application
 
-- gestionarea evenimentelor și programului festivalului;
-- interacțiunea participanților cu zona FunZone;
-- cumpărarea biletelor și rezervarea locurilor la evenimente;
-- acumularea și cheltuirea de puncte în sistemul de gamificare;
-- simularea unui mini-turneu între participanți.
+The Festival App enables:
 
-Aplicația este structurată pe două categorii de utilizatori: **Participanți** și **Organizatori**, fiecare cu meniul și opțiunile sale.
+- management of festival events and schedules;
+- interaction with the FunZone area;
+- ticket purchasing and seat reservation;
+- earning and spending points through a gamified reward system;
+- simulation of a mini-tournament between participants.
 
----
-
-## Meniul pentru Participanți
-
-1. **Vizualizează toate biletele (inclusiv cu reduceri)**  
-   Afișează toate biletele emise și aplică reduceri pentru persoanele sub 25 de ani.
-
-2. **Participanți sub 25 de ani**  
-   Listează participanții care beneficiază de bilete speciale cu reducere.
-
-3. **Statistici de participare**  
-   Afișează top 3 participanți cu cele mai multe participări și cel mai frecvent tip de eveniment.
-
-4. **Seturi de DJ pe scena principală**  
-   Arată concertele DJ-ilor care performează pe scena principală.
-
-5. **Jocuri deschise toată noaptea în FunZone**  
-   Filtrează doar jocurile din FunZone care funcționează toată noaptea.
-
-6. **Cumpără un bilet**  
-   Permite utilizatorului să își cumpere un bilet și să introducă datele personale.
-
-7. **Rezervă loc la un eveniment cu locuri limitate (GlobalTalks)**  
-   Permite unui participant să-și rezerve un loc la un talk special, în limita capacității.
-
-8. **Caută evenimente care încep după o anumită oră**  
-   Filtrare personalizată a evenimentelor în funcție de oră.
-
-9. **Sistem de puncte - Câștigă și cheltuie**
-    - Câștigi puncte automat la cumpărarea biletului (10% din preț).
-    - Primești puncte suplimentare pentru participarea la CampEats, FunZone, GlobalTalks.
-    - Poți cheltui punctele pe premii (ex: badge-uri, acces VIP).
-
-10. **Participă la Mini-Turneu FunZone**
-    - Te înscrii cu codul biletului tău.
-    - Se generează aleator adversari.
-    - Se simulează rundele (cu posibilitatea meciurilor 1v1 sau 3 participanți).
-    - Câștigătorul final primește 50 de puncte bonus.
+The application supports two types of users: **Participants** and **Organizers**, each with a dedicated menu and specific options.
 
 ---
 
-## Meniul pentru Organizatori
+## 🎟️ Participant Menu
 
-1. **Vezi programul complet pentru o anumită zi**  
-   Afișează toate evenimentele dintr-o zi aleasă, în ordine cronologică.
+1. **View all tickets (including discounts)**  
+   Displays all available tickets and applies discounts for users under the age of 25.
 
-2. **Vezi organizatorii și evenimentele asociate**  
-   Afișează fiecare organizator și evenimentele pe care le gestionează.
+2. **Participants under 25**  
+   Lists participants who are eligible for special discounted tickets.
 
-3. **Grupează evenimentele după tip**  
-   Grupa evenimentele în categorii: `Concert`, `DJ`, `CampEats`, `FunZone`, `GlobalTalks`.
+3. **Participation Statistics**  
+   Shows the top 3 most active participants and the most attended event type.
 
-4. **Ordonează evenimentele după ora de start**  
-   Listează toate evenimentele de la festival în ordine cronologică.
+4. **DJ Sets on the Main Stage**  
+   Displays a list of DJs performing on the main stage.
 
-5. **Mută un eveniment în altă zi**  
-   Organizatorii pot modifica ziua unui eveniment, iar aplicația actualizează automat programul.
+5. **All-night Games in the FunZone**  
+   Filters and displays games that are open all night.
+
+6. **Purchase a Ticket**  
+   Allows the user to buy a ticket and input personal information.
+
+7. **Reserve a Seat for Limited-Capacity Events (GlobalTalks)**  
+   Participants can reserve seats for talks, limited by capacity.
+
+8. **Search Events Starting After a Certain Time**  
+   Filters events based on a user-defined starting time.
+
+9. **Points System – Earn & Spend**
+    - Earn points automatically when buying tickets (10% of ticket price).
+    - Bonus points are awarded for attending CampEats, FunZone, and GlobalTalks events.
+    - Points can be redeemed for rewards (e.g., badges, VIP access).
+
+10. **Join the Mini-Tournament in FunZone**
+    - Join using your ticket code.
+    - Opponents are randomly generated.
+    - Simulates match rounds (1v1 or 3-player matches).
+    - The final winner earns 50 bonus points.
 
 ---
 
-## Tehnologii utilizate
+## 🛠️ Organizer Menu
+
+1. **View Full Schedule for a Specific Day**  
+   Displays all events scheduled for a selected day in chronological order.
+
+2. **View Organizers and Their Events**  
+   Lists each organizer along with the events they manage.
+
+3. **Group Events by Type**  
+   Groups events into categories: `Concert`, `DJ`, `CampEats`, `FunZone`, `GlobalTalks`.
+
+4. **Sort Events by Start Time**  
+   Lists all festival events in chronological order.
+
+5. **Reschedule an Event**  
+   Allows organizers to change the day of an event; the schedule updates accordingly.
+
+---
+
+## 🧑‍💻 Technologies Used
 
 - Java 17
-- OOP 
-- Colecții generice (`List`, `Set`, `Map`)
-- Design modular: separare între `Main` și `FestivalService`
-- Sisteme de puncte și gamificare
-- Meniu interactiv pe roluri
+- Object-Oriented Programming (OOP)
+- Generic Collections (`List`, `Set`, `Map`)
+- Modular design: separation of `Main` and `FestivalService`
+- Points and gamification system
+- Role-based interactive menu
 
----
 
-## 📌 Observații
+--- 
 
-- Aplicația este complet funcțională în linia de comandă.
-- Toate datele sunt generate în metoda `initDemoData()` din `FestivalService.java`.
+## 📌 Notes
 
+- The app is fully functional via the command line.
+- All demo data is generated inside the `initDemoData()` method from `FestivalService.java`.
