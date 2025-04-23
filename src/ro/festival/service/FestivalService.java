@@ -22,7 +22,6 @@ public class FestivalService {
     // Actions
     private final Map<Integer, List<Event>> scheduleByDay; //programul evenimentelor in fiecare zi
     private final Map<GlobalTalks, List<Participant>> reservedSeats;
-    private final Map<Participant, Integer> participantPoints;
     private final Map<Event, List<Participant>> eventAttended;
 
     // pt fct 9, sa adun punctele participantului si daca a participat la un turneu din joc in Fun Zone
@@ -35,7 +34,6 @@ public class FestivalService {
         this.scheduleByDay = new HashMap<>();
         this.organizerEvents = new HashMap<>();
         this.reservedSeats = new HashMap<>();
-        this.participantPoints = new HashMap<>();
         this.eventAttended = new HashMap<>();
     }
 
@@ -408,15 +406,12 @@ public class FestivalService {
     }
 
     // === 9. Festival Points: Earn & Spend ===
-    private void spendPoints(Participant participant, int cost) {
-        // retine punctele participantului sau daca nu are, v dobandi 0 puncte
-        int current = participantPoints.getOrDefault(participant, 0);
-        if (current < cost) {
-            System.out.println("You don't have enough points to spend this points. You need " + (cost - current) + " more.");
+    private void spendPoints(int eventPoints, int cost) {
+        if (eventPoints < cost) {
+            System.out.println("You don't have enough points to spend this points. You need " + (cost - eventPoints) + " more.");
             return;
         }
-        participantPoints.put(participant, current-cost); //metoda put actualizeaza valoarea asociata cheii participant
-        System.out.println("You spent " + cost + " points. Remaining: " + (current - cost));
+        System.out.println("You spent " + cost + " points. Remaining: " + (eventPoints - cost));
     }
 
     public void calculatePoints(Scanner scanner){
@@ -468,8 +463,11 @@ public class FestivalService {
         }
 
         System.out.println("Points from ticket and events: " + eventPoints);
-        System.out.println("Bonus from tournament: 50");
-        System.out.println("Total points: " + (eventPoints + 50));
+        if (lastTournamentWinner != null && lastTournamentWinner.equals(currentParticipant)) {
+            System.out.println("Bonus from tournament: 50");
+            eventPoints += 50;
+            System.out.println("Total points: " + (eventPoints));
+        }
 
         Map<String, Integer> prizes = Map.of(
                 "Festival Badge", 50,
@@ -488,7 +486,7 @@ public class FestivalService {
                 System.out.println("Prize not found.");
             } else {
                 int cost = prizes.get(chosenPrize);
-                spendPoints(currentParticipant, cost);
+                spendPoints(eventPoints, cost);
             }
         }
     }
