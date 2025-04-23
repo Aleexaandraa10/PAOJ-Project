@@ -84,7 +84,8 @@ The application supports two types of users: **Participants** and **Organizers**
 - Points and gamification system
 - Role-based interactive menu
 
----
+
+--- 
 
 ## 📌 Notes
 
