@@ -8,3 +8,4 @@ public abstract class BaseDAO<T,K> {
     public abstract void update(T obj);
     public abstract void delete(K id);
 }
+
