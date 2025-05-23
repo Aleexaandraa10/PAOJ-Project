@@ -1,7 +1,6 @@
 package ro.festival;
 
 import ro.festival.service.FestivalService;
-
 import java.time.LocalTime;
 import java.util.Scanner;
 

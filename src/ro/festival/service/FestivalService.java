@@ -205,9 +205,9 @@ public class FestivalService {
         // computeIfAbsent am folosit pt ca nu stiam sigur daca cheia exista, poate deja am adaugat ev in ziua 1 poate nu
             //computeIfAbsent se asigura ca lista deja exista ca sa pot da .add pe ea
 
-        organizerEvents.put(org1, org1.events());
-        organizerEvents.put(org2, org2.events());
-        organizerEvents.put(org3, org3.events());
+        organizerEvents.put(org1, org1.getEvents());
+        organizerEvents.put(org2, org2.getEvents());
+        organizerEvents.put(org3, org3.getEvents());
     }
 
 
@@ -226,8 +226,8 @@ public class FestivalService {
     // === 2. View participants under 25 ===
     public void printParticipantsUnder25(){
         participants.stream()
-                .filter(p-> p.age()<25)
-                .forEach(p->System.out.println(p.participantName() + " (" + p.age() + " years old)"));
+                .filter(p-> p.getAge()<25)
+                .forEach(p->System.out.println(p.getParticipantName() + " (" + p.getAge() + " years old)"));
     }
 
     // === 3. View participation stats (top participants & event types) ===
@@ -256,7 +256,7 @@ public class FestivalService {
         participations.entrySet().stream()
                 .sorted(Map.Entry.<Participant, Long>comparingByValue().reversed())
                 .limit(3)
-                .forEach(entry -> System.out.println("• " + entry.getKey().participantName() + ": " + entry.getValue() + " events"));
+                .forEach(entry -> System.out.println("• " + entry.getKey().getParticipantName() + ": " + entry.getValue() + " events"));
     }
 
     // === 4. Show all DJ sets on the main stage ===
@@ -390,7 +390,7 @@ public class FestivalService {
         reservedSeats.forEach((key, participantsList) -> {
             if(key.equals(selected)){
                 for(Participant p: participantsList) {
-                    System.out.println(" - " + p.participantName());
+                    System.out.println(" - " + p.getParticipantName());
                 }
             }
         });
@@ -419,7 +419,7 @@ public class FestivalService {
         String code = scanner.nextLine();
 
         Participant currentParticipant = participants.stream()
-                .filter(p -> p.ticket() != null && p.ticket().getCode().equalsIgnoreCase(code))
+                .filter(p -> p.getTicket() != null && p.getTicket().getCode().equalsIgnoreCase(code))
                 .findFirst()
                 .orElse(null);
 
@@ -449,7 +449,7 @@ public class FestivalService {
         }
 
         int eventPoints = 0;
-        int ticketPoints = (int) (currentParticipant.ticket().getPrice() * 0.10);
+        int ticketPoints = (int) (currentParticipant.getTicket().getPrice() * 0.10);
         eventPoints += ticketPoints;
 
         for (Event event : attendedEvents) {
@@ -497,7 +497,7 @@ public class FestivalService {
         String code = scanner.nextLine();
 
         Participant userParticipant = participants.stream()
-                .filter(p -> p.ticket() != null && p.ticket().getCode().equalsIgnoreCase(code))
+                .filter(p -> p.getTicket() != null && p.getTicket().getCode().equalsIgnoreCase(code))
                 .findFirst()
                 .orElse(null);
 
@@ -538,14 +538,14 @@ public class FestivalService {
 
         System.out.println("\nYou have successfully joined the FunZone Mini-Tournament!");
         System.out.println("Here are the participants:");
-        tournamentPlayers.forEach(p -> System.out.println("• " + p.participantName()));
+        tournamentPlayers.forEach(p -> System.out.println("• " + p.getParticipantName()));
 
         Participant winner = runTournamentRoundFlexible(tournamentPlayers, "First Round");
-        System.out.println("\n🏆 The Mini-Tournament Winner is: " + winner.participantName() + "! 🏆");
+        System.out.println("\n🏆 The Mini-Tournament Winner is: " + winner.getParticipantName() + "! 🏆");
 
         lastTournamentWinner = winner;
-        System.out.println(winner.participantName() +" earned 50 points!");
-        System.out.println("\nWinner's ticket code: " + winner.ticket().getCode());
+        System.out.println(winner.getParticipantName() +" earned 50 points!");
+        System.out.println("\nWinner's ticket code: " + winner.getTicket().getCode());
     }
 
     private Participant runTournamentRoundFlexible(List<Participant> players, String roundName) {
@@ -573,10 +573,10 @@ public class FestivalService {
                         .get().getKey();
 
                 System.out.printf("3-player round: %s (%d), %s (%d), %s (%d) → Winner: %s\n",
-                        p1.participantName(), s1,
-                        p2.participantName(), s2,
-                        p3.participantName(), s3,
-                        best.participantName());
+                        p1.getParticipantName(), s1,
+                        p2.getParticipantName(), s2,
+                        p3.getParticipantName(), s3,
+                        best.getParticipantName());
 
                 winners.add(best);
                 i += 3;
@@ -588,9 +588,9 @@ public class FestivalService {
                 winners.add(winner);
 
                 System.out.printf("%s (%d) vs %s (%d) → Winner: %s\n",
-                        p1.participantName(), score1,
-                        p2.participantName(), score2,
-                        winner.participantName());
+                        p1.getParticipantName(), score1,
+                        p2.getParticipantName(), score2,
+                        winner.getParticipantName());
                 i += 2;
             }
         }
@@ -629,7 +629,7 @@ public class FestivalService {
     // === 2. View all organizers and their events ===
     public void printOrganizersAndEvents(){
         organizerEvents.forEach((organizer, eventList) -> {
-            System.out.println("Organizers: " + organizer.organizerName());
+            System.out.println("Organizers: " + organizer.getOrganizerName());
             eventList.forEach(e->System.out.println("    - " + e));
         });
     }

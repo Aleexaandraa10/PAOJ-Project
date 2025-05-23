@@ -3,20 +3,33 @@ package ro.festival.model;
 import java.time.LocalTime;
 
 public abstract class Event {
+    private final int id_event;
+    private final FestivalDay day;
+    private final int id_organizer;
     private final String eventName;
     private final LocalTime startTime;
     private final LocalTime endTime;
-    private final FestivalDay day;
+    private final String eventType;
 
-    public Event(String eventName, LocalTime startTime, LocalTime endTime, FestivalDay day) {
+    public Event(int id_event, FestivalDay day, int id_organizer, String eventName, LocalTime startTime, LocalTime endTime, String eventType) {
+        this.id_event = id_event;
+        this.day = day;
+        this.id_organizer = id_organizer;
         this.eventName = eventName;
         this.startTime = startTime;
         this.endTime = endTime;
-        this.day = day;
+        this.eventType = eventType;
     }
+    public Event(String eventName, LocalTime startTime, LocalTime endTime, FestivalDay day) {
+        this(0, day, 0, eventName, startTime, endTime, "");
+    }
+    public int getId_event() { return id_event; }
+    public int getId_organizer() { return id_organizer; }
     public String getEventName() { return eventName; }
     public LocalTime getStartTime() { return startTime; }
+    public LocalTime getEndTime() { return endTime; }
     public FestivalDay getDay() { return day; }
+    public String getEventType() { return eventType; }
 
     @Override
     public String toString() {
