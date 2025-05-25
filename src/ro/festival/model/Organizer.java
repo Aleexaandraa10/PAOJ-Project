@@ -2,21 +2,47 @@ package ro.festival.model;
 
 import java.util.List;
 
-// un record este un tip de clasa folosit pt reprezentarea DATELOR IMUTABILE
-// fara sa scrii manual constructori, getteri, equals(), hashCode() sau toString()
-// limitari ale recordurilor: --> nu poti avea settere
-//                            --> nu poti extinde o alta clasa
-//                            --> campurile sunt automat final
-public record Organizer(String companyName, String organizerName, List<Event> events) {
+public class Organizer {
+    private final int id_organizer;
+    private final String companyName;
+    private final String organizerName;
+    private final List<Event> events;
+
+    public Organizer(int id_organizer, String companyName, String organizerName, List<Event> events) {
+        this.id_organizer = id_organizer;
+        this.companyName = companyName;
+        this.organizerName = organizerName;
+        this.events = events;
+    }
+
+    public Organizer(String companyName, String organizerName, List<Event> events) {
+        this(0, companyName, organizerName, events);
+    }
+
+    public int getId() {
+        return id_organizer;
+    }
+
+    public String getCompanyName() {
+        return companyName;
+    }
+
+    public String getOrganizerName() {
+        return organizerName;
+    }
+
+    public List<Event> getEvents() {
+        return events;
+    }
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("Organizer company: ").append(companyName).append("\n");
-        sb.append("Representitive: ").append(organizerName).append("\n");
+        sb.append("Representative: ").append(organizerName).append("\n");
         sb.append("Events organized in this festival:\n");
 
-        if (events.isEmpty()) {
+        if (events == null || events.isEmpty()) {
             sb.append("No events assigned yet.");
         } else {
             for (Event e : events) {
@@ -25,13 +51,4 @@ public record Organizer(String companyName, String organizerName, List<Event> ev
         }
         return sb.toString();
     }
-
 }
-
-
-// EXPLICATIE EQUALS
-//  String a = new String("Ioana");
-//  String b = new String("Ioana");
-//
-//   System.out.println(a == b);       // false – referințe diferite
-//   System.out.println(a.equals(b));  // true  – conținut egal

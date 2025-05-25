@@ -8,6 +8,10 @@ public class TicketUnder25 extends Ticket {
         this.discountPercentage = discountPercentage;
     }
 
+    public double getDiscountPercentage() {
+        return discountPercentage;
+    }
+
     @Override
     public String toString() {
         return super.toString()+ "\n   This participant is under 25, so the discount percentage is " + discountPercentage + "%";
