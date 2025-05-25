@@ -20,7 +20,7 @@ public class GlobalTalkSeatDAO {
     }
 
     public void reserveSeat(int participantId, int talkId) {
-        String sql = "INSERT INTO GlobalTalkSeat (id_participant, id_talk) VALUES (?, ?)";
+        String sql = "INSERT INTO GlobalTalkSeat (id_participant, id_event) VALUES (?, ?)";
         try (Connection conn = DBConnection.connect();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
@@ -35,7 +35,7 @@ public class GlobalTalkSeatDAO {
 
     public List<Participant> getParticipantsForTalk(int talkId) {
         List<Participant> participants = new ArrayList<>();
-        String sql = "SELECT id_participant FROM GlobalTalkSeat WHERE id_talk = ?";
+        String sql = "SELECT id_participant FROM GlobalTalkSeat WHERE id_event = ?";
 
         try (Connection conn = DBConnection.connect();
              PreparedStatement stmt = conn.prepareStatement(sql)) {

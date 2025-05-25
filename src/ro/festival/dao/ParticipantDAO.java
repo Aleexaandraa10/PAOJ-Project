@@ -23,14 +23,20 @@ public class ParticipantDAO extends BaseDAO<Participant, Integer> {
 
     @Override
     public void create(Participant participant) {
-        String sql = "INSERT INTO Participant (name, age, ticket_code) VALUES (?, ?, ?)";
+        String sql = "INSERT INTO Participant (participantName, age, code) VALUES (?, ?, ?)";
         try (Connection conn = DBConnection.connect();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+             PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             stmt.setString(1, participant.getParticipantName());
             stmt.setInt(2, participant.getAge());
             stmt.setString(3, participant.getTicket().getCode());
             stmt.executeUpdate();
+
+            // Ia ID-ul generat de MySQL și setează-l în obiectul Java
+            ResultSet rs = stmt.getGeneratedKeys();
+            if (rs.next()) {
+                participant.setId(rs.getInt(1));
+            }
 
         } catch (SQLException e) {
             System.err.println("Error inserting participant:");
@@ -38,9 +44,10 @@ public class ParticipantDAO extends BaseDAO<Participant, Integer> {
         }
     }
 
+
     @Override
     public Optional<Participant> read(Integer id) {
-        String sql = "SELECT id, name, age, ticket_code FROM Participant WHERE id = ?";
+        String sql = "SELECT id_participant, participantName, age, code FROM Participant WHERE id_participant = ?";
         try (Connection conn = DBConnection.connect();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
@@ -48,9 +55,9 @@ public class ParticipantDAO extends BaseDAO<Participant, Integer> {
             ResultSet rs = stmt.executeQuery();
 
             if (rs.next()) {
-                String name = rs.getString("name");
+                String name = rs.getString("participantName");
                 int age = rs.getInt("age");
-                String ticketCode = rs.getString("ticket_code");
+                String ticketCode = rs.getString("code");
                 Ticket ticket = TicketService.getInstance().getTicketByCode(ticketCode);
                 Participant p = new Participant(name, age, ticket);
                 return Optional.of(p);
@@ -65,7 +72,7 @@ public class ParticipantDAO extends BaseDAO<Participant, Integer> {
 
     @Override
     public void update(Participant participant) {
-        String sql = "UPDATE Participant SET name = ?, age = ?, ticket_code = ? WHERE id = ?";
+        String sql = "UPDATE Participant SET participantName = ?, age = ?, code = ? WHERE id_participant = ?";
         try (Connection conn = DBConnection.connect();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
@@ -83,7 +90,7 @@ public class ParticipantDAO extends BaseDAO<Participant, Integer> {
 
     @Override
     public void delete(Integer id) {
-        String sql = "DELETE FROM Participant WHERE id = ?";
+        String sql = "DELETE FROM Participant WHERE id_participant = ?";
         try (Connection conn = DBConnection.connect();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
@@ -98,20 +105,20 @@ public class ParticipantDAO extends BaseDAO<Participant, Integer> {
 
     public List<Participant> readAll() {
         List<Participant> participants = new ArrayList<>();
-        String sql = "SELECT id, name, age, ticket_code FROM Participant";
+        String sql = "SELECT id_participant, participantName, age, code FROM Participant";
 
         try (Connection conn = DBConnection.connect();
              PreparedStatement stmt = conn.prepareStatement(sql);
              ResultSet rs = stmt.executeQuery()) {
 
             while (rs.next()) {
-                String name = rs.getString("name");
+                String name = rs.getString("participantName");
                 int age = rs.getInt("age");
-                String ticketCode = rs.getString("ticket_code");
+                String ticketCode = rs.getString("code");
                 Ticket ticket = TicketService.getInstance().getTicketByCode(ticketCode);
 
                 Participant p = new Participant(name, age, ticket);
-                p.setId(rs.getInt("id"));
+                p.setId(rs.getInt("id_participant"));
                 participants.add(p);
             }
 
