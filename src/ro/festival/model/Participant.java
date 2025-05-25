@@ -1,7 +1,7 @@
 package ro.festival.model;
 
 public class Participant {
-    private final int id;
+    private int id;
     private final String participantName;
     private final int age;
     private final Ticket ticket;
@@ -18,6 +18,10 @@ public class Participant {
     }
 
     public int getId() {
+        return id;
+    }
+
+    public int setId(int id) { this.id = id;
         return id;
     }
 

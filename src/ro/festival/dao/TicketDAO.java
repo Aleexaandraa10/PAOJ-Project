@@ -5,10 +5,14 @@ import ro.festival.model.Ticket;
 import ro.festival.model.TicketUnder25;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 public class TicketDAO extends BaseDAO<Ticket, String> {
 
+    // Este folosită pentru a crea o singură instanță globală a clasei TicketDAO,
+    // ca să nu tot instanțiezi peste tot în aplicație. Se apelează TicketDAO.getInstance()
     private static TicketDAO instance;
 
     public static TicketDAO getInstance() {
@@ -54,11 +58,14 @@ public class TicketDAO extends BaseDAO<Ticket, String> {
         """;
 
         try (Connection conn = DBConnection.connect();
+             // pregateste un query SQL pt o executie  ulterioara
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setString(1, code);
+            // rulez query-ul si salvez rezultatul
             ResultSet rs = stmt.executeQuery();
 
+            // daca am gasit un bilet cu codul respectiv, extrag inf. despre el
             if (rs.next()) {
                 double price = rs.getDouble("price");
                 double discount = rs.getDouble("discountPercentage");
@@ -124,4 +131,37 @@ public class TicketDAO extends BaseDAO<Ticket, String> {
             e.printStackTrace();
         }
     }
+
+    public List<Ticket> readAll() {
+        List<Ticket> tickets = new ArrayList<>();
+        String sql = """
+        SELECT t.code, t.price, tu.discountPercentage
+        FROM Ticket t
+        LEFT JOIN TicketUnder25 tu ON t.code = tu.code
+    """;
+
+        try (Connection conn = DBConnection.connect();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                String code = rs.getString("code");
+                double price = rs.getDouble("price");
+                double discount = rs.getDouble("discountPercentage");
+                boolean isUnder25 = !rs.wasNull();
+
+                Ticket ticket = isUnder25
+                        ? new TicketUnder25(code, price, discount)
+                        : new Ticket(code, price);
+                tickets.add(ticket);
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Error reading all tickets:");
+            e.printStackTrace();
+        }
+
+        return tickets;
+    }
+
 }

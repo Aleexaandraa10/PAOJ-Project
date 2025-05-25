@@ -2,8 +2,8 @@ package ro.festival.model;
 
 import java.time.LocalTime;
 
-public abstract class Event {
-    private final int id_event;
+public class Event {
+    private int id_event;
     private final FestivalDay day;
     private final int id_organizer;
     private final String eventName;
@@ -23,7 +23,13 @@ public abstract class Event {
     public Event(String eventName, LocalTime startTime, LocalTime endTime, FestivalDay day) {
         this(0, day, 0, eventName, startTime, endTime, "");
     }
-    public int getId_event() { return id_event; }
+    public int getIdEvent() {
+        return id_event;
+    }
+
+    public void setIdEvent(int id_event) {
+        this.id_event = id_event;
+    }
     public int getId_organizer() { return id_organizer; }
     public String getEventName() { return eventName; }
     public LocalTime getStartTime() { return startTime; }

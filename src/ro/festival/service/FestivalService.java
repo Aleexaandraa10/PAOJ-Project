@@ -1,4 +1,8 @@
 package ro.festival.service;
+import ro.festival.dao.EventDAO;
+import ro.festival.dao.GlobalTalkSeatDAO;
+import ro.festival.dao.ParticipantDAO;
+import ro.festival.dao.ParticipantEventDAO;
 import ro.festival.model.*;
 import ro.festival.model.eventtypes.*;
 import java.time.LocalTime;
@@ -14,27 +18,19 @@ public class FestivalService {
     // dar pot modifica continutul listei --> .add(), .clear()
 
     // Interrogations
-    private final List<Ticket> tickets;
-    private final Set<Participant> participants;
     private final List<Event> events;
     private final Map<Organizer, List<Event>> organizerEvents;
 
     // Actions
     private final Map<Integer, List<Event>> scheduleByDay; //programul evenimentelor in fiecare zi
-    private final Map<GlobalTalks, List<Participant>> reservedSeats;
-    private final Map<Event, List<Participant>> eventAttended;
 
     // pt fct 9, sa adun punctele participantului si daca a participat la un turneu din joc in Fun Zone
     private static Participant lastTournamentWinner = null;
 
     public FestivalService() {
-        this.tickets = new ArrayList<>();
-        this.participants = new HashSet<>();
         this.events = new ArrayList<>();
         this.scheduleByDay = new HashMap<>();
         this.organizerEvents = new HashMap<>();
-        this.reservedSeats = new HashMap<>();
-        this.eventAttended = new HashMap<>();
     }
 
 
@@ -42,30 +38,54 @@ public class FestivalService {
         // ==================================
         //              TICKETS
         // ==================================
-        Ticket t1 = new Ticket("T001", 250.0);
-        Ticket t2 = new Ticket("T002", 300.0);
-        Ticket t3 = new Ticket("T003", 275.5);
-        Ticket t4 = new Ticket("T004", 310.75);
-        Ticket t5 = new Ticket("T005", 199.99);
-        TicketUnder25 t6 = new TicketUnder25("T006", 200.0, 10.0);
-        TicketUnder25 t7 = new TicketUnder25("T007", 180.0, 15.0);
-        TicketUnder25 t8 = new TicketUnder25("T008", 220.0, 12.5);
+        // === Creez biletele în DB ===
+        List<Ticket> demoTickets = List.of(
+                new Ticket("T001", 250.0),
+                new Ticket("T002", 300.0),
+                new Ticket("T003", 275.5),
+                new Ticket("T004", 310.75),
+                new Ticket("T005", 199.99),
+                new TicketUnder25("T006", 200.0, 10.0),
+                new TicketUnder25("T007", 180.0, 15.0),
+                new TicketUnder25("T008", 220.0, 12.5)
+        );
 
-        tickets.addAll(List.of(t1, t2, t3, t4, t5, t6, t7, t8));
+        for (Ticket t : demoTickets) {
+            TicketService.getInstance().addTicket(t);
+        }
+
+        // === Le citesc din DB ===
+        Ticket t1 = TicketService.getInstance().getTicketByCode("T001");
+        Ticket t2 = TicketService.getInstance().getTicketByCode("T002");
+        Ticket t3 = TicketService.getInstance().getTicketByCode("T003");
+        Ticket t4 = TicketService.getInstance().getTicketByCode("T004");
+        Ticket t5 = TicketService.getInstance().getTicketByCode("T005");
+        Ticket t6 = TicketService.getInstance().getTicketByCode("T006");
+        Ticket t7 = TicketService.getInstance().getTicketByCode("T007");
+        Ticket t8 = TicketService.getInstance().getTicketByCode("T008");
 
         // ==================================
         //              PARTICIPANTS
         // ==================================
+        // === Creez participantii ===
         Participant p1 = new Participant("Ioana", 28, t1);
         Participant p2 = new Participant("Mihai", 32, t2);
         Participant p3 = new Participant("Elena", 25, t3);
         Participant p4 = new Participant("Vlad", 29, t4);
         Participant p5 = new Participant("Radu", 23, t5); // sub 25, dar are bilet normal
-        Participant p6 = new Participant("Ana", 22, t6); // TicketUnder25
+        Participant p6 = new Participant("Ana", 22, t6);  // TicketUnder25
         Participant p7 = new Participant("Daria", 20, t7); // TicketUnder25
-        Participant p8 = new Participant("Alex", 19, t8); // TicketUnder25
+        Participant p8 = new Participant("Alex", 19, t8);  // TicketUnder25
 
-        participants.addAll(List.of(p1, p2, p3, p4, p5, p6, p7, p8));
+        // === Salvez participantii în DB ===
+        ParticipantService.getInstance().addParticipant(p1);
+        ParticipantService.getInstance().addParticipant(p2);
+        ParticipantService.getInstance().addParticipant(p3);
+        ParticipantService.getInstance().addParticipant(p4);
+        ParticipantService.getInstance().addParticipant(p5);
+        ParticipantService.getInstance().addParticipant(p6);
+        ParticipantService.getInstance().addParticipant(p7);
+        ParticipantService.getInstance().addParticipant(p8);
 
 
         // =============================================================================================================
@@ -101,10 +121,20 @@ public class FestivalService {
         );
         events.addAll(List.of(salty1, salty2, sweetCorner, fastFood));
 
-        eventAttended.computeIfAbsent(sweetCorner, k -> new ArrayList<>(List.of(p1, p2)));
-        eventAttended.computeIfAbsent(fastFood, k -> new ArrayList<>(List.of(p1, p3)));
-        eventAttended.computeIfAbsent(salty2, k -> new ArrayList<>(List.of(p4, p5)));
-        eventAttended.computeIfAbsent(salty1, k -> new ArrayList<>(List.of(p5, p6)));
+        ParticipantEventDAO dao = ParticipantEventDAO.getInstance();
+
+        dao.addParticipantToEvent(p1.getId(), sweetCorner.getIdEvent());
+        dao.addParticipantToEvent(p2.getId(), sweetCorner.getIdEvent());
+
+        dao.addParticipantToEvent(p1.getId(), fastFood.getIdEvent());
+        dao.addParticipantToEvent(p3.getId(), fastFood.getIdEvent());
+
+        dao.addParticipantToEvent(p4.getId(), salty2.getIdEvent());
+        dao.addParticipantToEvent(p5.getId(), salty2.getIdEvent());
+
+        dao.addParticipantToEvent(p5.getId(), salty1.getIdEvent());
+        dao.addParticipantToEvent(p6.getId(), salty1.getIdEvent());
+
 
 
         //computeIfAbsent(...)
@@ -160,8 +190,19 @@ public class FestivalService {
                 LocalTime.of(15, 0), LocalTime.of(23, 0), FestivalDay.DAY3, List.of(g3, g4));
         events.addAll(List.of(fz1, fz2));
 
-        eventAttended.computeIfAbsent(fz1, k -> new ArrayList<>(List.of(p7, p8, p6, p1)));
-        eventAttended.computeIfAbsent(fz1, k -> new ArrayList<>(List.of(p5, p4, p3)));
+        // Pentru fz1
+        int idFz1 = fz1.getIdEvent();
+        dao.addParticipantToEvent(p7.getId(), idFz1);
+        dao.addParticipantToEvent(p8.getId(), idFz1);
+        dao.addParticipantToEvent(p6.getId(), idFz1);
+        dao.addParticipantToEvent(p1.getId(), idFz1);
+
+        // Pentru fz2
+        int idFz2 = fz2.getIdEvent();
+        dao.addParticipantToEvent(p5.getId(), idFz2);
+        dao.addParticipantToEvent(p4.getId(), idFz2);
+        dao.addParticipantToEvent(p3.getId(), idFz2);
+
 
         scheduleByDay.computeIfAbsent(1, k -> new ArrayList<>()).add(fz1);
         scheduleByDay.computeIfAbsent(3, k -> new ArrayList<>()).add(fz2);
@@ -177,18 +218,33 @@ public class FestivalService {
                 LocalTime.of(13, 30), FestivalDay.DAY3, "Ioana Georgescu", "Social Media Magic", 4);
         events.addAll(List.of(gt1, gt2, gt3));
 
-        eventAttended.computeIfAbsent(gt1, k -> new ArrayList<>(List.of(p1)));
-        eventAttended.computeIfAbsent(gt2, k -> new ArrayList<>(List.of(p4, p3)));
-        eventAttended.computeIfAbsent(gt3, k -> new ArrayList<>(List.of(p7, p8)));
+        // Pentru gt1
+        int idGt1 = gt1.getIdEvent();
+        dao.addParticipantToEvent(p1.getId(), idGt1);
+
+        // Pentru gt2
+        int idGt2 = gt2.getIdEvent();
+        dao.addParticipantToEvent(p4.getId(), idGt2);
+        dao.addParticipantToEvent(p3.getId(), idGt2);
+
+        // Pentru gt3
+        int idGt3 = gt3.getIdEvent();
+        dao.addParticipantToEvent(p7.getId(), idGt3);
+        dao.addParticipantToEvent(p8.getId(), idGt3);
 
         scheduleByDay.computeIfAbsent(2, k -> new ArrayList<>()).add(gt1);
         scheduleByDay.computeIfAbsent(3, k -> new ArrayList<>()).addAll(List.of(gt2, gt3));
 
-        reservedSeats.put(gt1, new ArrayList<>(List.of(p1, p2, p3, p4, p5, p6, p7, p8)));
-        reservedSeats.put(gt2, new ArrayList<>(List.of(p1, p2, p3, p4)));
-        reservedSeats.put(gt3, new ArrayList<>(List.of(p8))); //nu am putut face doar List.of(p8) pt ca a
-                            // s fi creat o lista imutabila(read-only) pe care nu as mai fi putut s-o modific dupa
-                            // asa cum fac la fct de la 5
+        GlobalTalkSeatDAO dao1 = GlobalTalkSeatDAO.getInstance();
+
+        for (Participant p : List.of(p1, p2, p3, p4, p5, p6, p7, p8))
+            dao1.reserveSeat(p.getId(), gt1.getIdEvent());
+
+        for (Participant p : List.of(p1, p2, p3, p4))
+            dao1.reserveSeat(p.getId(), gt2.getIdEvent());
+
+        dao1.reserveSeat(p8.getId(), gt3.getIdEvent());
+
 
 
         // ======================================================================
@@ -216,6 +272,8 @@ public class FestivalService {
     // =================================================================================================================
     // === 1. View all tickets ===
     public void printAllTickets(){
+        List <Ticket> tickets = TicketService.getInstance().getAllTickets();
+
         if(tickets.isEmpty()){
             System.out.println("No tickets found");
             return;
@@ -225,6 +283,8 @@ public class FestivalService {
 
     // === 2. View participants under 25 ===
     public void printParticipantsUnder25(){
+        List<Participant> participants = ParticipantService.getInstance().getAllParticipants();
+
         participants.stream()
                 .filter(p-> p.getAge()<25)
                 .forEach(p->System.out.println(p.getParticipantName() + " (" + p.getAge() + " years old)"));
@@ -248,15 +308,19 @@ public class FestivalService {
         System.out.println("\nMost frequent event type: " + mostCommonType);
 
         // === Participanții cu cele mai multe participări ===
-        Map<Participant, Long> participations = eventAttended.values().stream()//.values() ia doar List<Participant> din perechea (cheie, val)
-                .flatMap(List::stream) //aplatizam toate listele de participanti intr-un flux continuu
-                .collect(Collectors.groupingBy(p -> p, Collectors.counting())); // obtinem un Map<Participant, Long>, unde Long e de cate ori a participat
+        Map<Integer, Long> participationCounts = ParticipantEventDAO.getInstance().getParticipationCounts();
 
         System.out.println("\nTop 3 participants by number of attended events:");
-        participations.entrySet().stream()
-                .sorted(Map.Entry.<Participant, Long>comparingByValue().reversed())
+
+        participationCounts.entrySet().stream()
+                .sorted(Map.Entry.<Integer, Long>comparingByValue().reversed())
                 .limit(3)
-                .forEach(entry -> System.out.println("• " + entry.getKey().getParticipantName() + ": " + entry.getValue() + " events"));
+                .forEach(entry -> {
+                    Participant p = ParticipantDAO.getInstance().read(entry.getKey()).orElse(null);
+                    if (p != null) {
+                        System.out.println("• " + p.getParticipantName() + ": " + entry.getValue() + " events");
+                    }
+                });
     }
 
     // === 4. Show all DJ sets on the main stage ===
@@ -302,12 +366,14 @@ public class FestivalService {
             System.out.println("You'll receive a discount of " + discount + "%!");
         }
 
-        String code = "T" + String.format("%03d", tickets.size() + 1);
+        int count = TicketService.getInstance().getAllTickets().size();
+        String code = "T" + String.format("%03d", count + 1);
+
         Ticket ticket = isUnder25
                 ? new TicketUnder25(code, basePrice, discount)
                 : new Ticket(code, basePrice);
 
-        tickets.add(ticket);
+        TicketService.getInstance().addTicket(ticket);
 
         System.out.print("What's your first name? ");
         String name = scanner.nextLine();
@@ -318,7 +384,9 @@ public class FestivalService {
             return;
         }
 
-        participants.add(new Participant(name, age, ticket));
+        Participant participant = new Participant(name, age, ticket);
+        ParticipantService.getInstance().addParticipant(participant);
+
 
         double finalPrice = isUnder25
                 ? Math.round(basePrice * (1 - discount / 100.0) * 100.0) / 100.0
@@ -340,37 +408,40 @@ public class FestivalService {
     }
 
     // === 7. Reserve a seat for a limited-capacity event ===
-    public void reserveSeat_GlobalTalk(Scanner scanner){
+    public void reserveSeat_GlobalTalk(Scanner scanner) {
         List<GlobalTalks> talks = events.stream()
                 .filter(e -> e instanceof GlobalTalks)
-                .map( e -> (GlobalTalks) e)
+                .map(e -> (GlobalTalks) e)
                 .toList();
-        if(talks.isEmpty()){
+
+        if (talks.isEmpty()) {
             System.out.println("No global talks found");
             return;
         }
 
         System.out.println("Available global talks events: ");
-        for(int i=0; i<talks.size(); i++){
-            System.out.println( (i+1) + ". " + talks.get(i).toString());
+        for (int i = 0; i < talks.size(); i++) {
+            System.out.println((i + 1) + ". " + talks.get(i));
         }
 
         System.out.println("Choose the event number: ");
         int index = Integer.parseInt(scanner.nextLine()) - 1;
 
-        if(index < 0 || index >= talks.size()){
+        if (index < 0 || index >= talks.size()) {
             System.out.println("Please enter a valid index.");
             return;
         }
 
         GlobalTalks selected = talks.get(index);
-        // computeIfAbsent = daca nu exista il creez si il adaug, daca exista il folosesc
-        List<Participant> reserved = reservedSeats.computeIfAbsent(selected, k -> new ArrayList<>());
+        int talkId = selected.getIdEvent();
 
-        if(reserved.size() >= selected.getSeats()){
+        List<Participant> reserved = GlobalTalkSeatDAO.getInstance().getParticipantsForTalk(talkId);
+
+        if (reserved.size() >= selected.getSeats()) {
             System.out.println("Sorry, this talk is fully booked!");
             return;
         }
+
         System.out.print("Your name: ");
         String name = scanner.nextLine();
 
@@ -382,21 +453,27 @@ public class FestivalService {
         System.out.print("Your age? ");
         int age = Integer.parseInt(scanner.nextLine());
 
-        Participant participant = new Participant(name, age, null);
+        // caut participantul în baza de date
+        Participant participant = ParticipantDAO.getInstance().findByNameAndAge(name, age);
 
-        reserved.add(participant);
+        if (participant == null) {
+            System.out.println("Participant not found in system. Please register first.");
+            return;
+        }
+
+        GlobalTalkSeatDAO.getInstance().reserveSeat(participant.getId(), talkId);
+
         System.out.println("Reservation confirmed for " + selected.getEventName() + "!");
-        System.out.println("\nThe participants for this event are: ");
-        reservedSeats.forEach((key, participantsList) -> {
-            if(key.equals(selected)){
-                for(Participant p: participantsList) {
-                    System.out.println(" - " + p.getParticipantName());
-                }
-            }
-        });
-        System.out.println("Available seats: " + (selected.getSeats()-reserved.size()) );
 
+        System.out.println("\nThe participants for this event are:");
+        reserved = GlobalTalkSeatDAO.getInstance().getParticipantsForTalk(talkId); // refacem lista cu cel nou inclus
+        for (Participant p : reserved) {
+            System.out.println(" - " + p.getParticipantName());
+        }
+
+        System.out.println("Available seats: " + (selected.getSeats() - reserved.size()));
     }
+
 
     // === 8. Find events that start after a specific time ===
     public void printEventsByStartTime(LocalTime time){
@@ -418,6 +495,8 @@ public class FestivalService {
         System.out.print("Enter your ticket code: ");
         String code = scanner.nextLine();
 
+        List<Participant> participants = ParticipantService.getInstance().getAllParticipants();
+
         Participant currentParticipant = participants.stream()
                 .filter(p -> p.getTicket() != null && p.getTicket().getCode().equalsIgnoreCase(code))
                 .findFirst()
@@ -429,13 +508,14 @@ public class FestivalService {
         }
 
         // evenimentul la care a participat currentParticipant
-        // Map.Entry = interfata interna (nested interface) din cadrul interfetei Map
-        //             --> un "tip de obiect" care reprezinta o pereche cheie-valoare dintr-o mapa
-        //eu ajung la Map.Entry folosind .entrySet() care ret. toate perechile din mapa
-        List<Event> attendedEvents = eventAttended.entrySet().stream() //.entrySet() obtine toate perechile (Event, List<Participant>) din mapa
-                .filter(entry -> entry.getValue().contains(currentParticipant)) //pastram doar acele intrari (event + participant) unde lista participantilor contine currentParticipant
-                .map(Map.Entry::getKey) //din fiecare intrare care a trecut de filtru, extragem cheia, adica ob. Event
+        List<Integer> attendedEventIds = ParticipantEventDAO.getInstance()
+                .getEventIdsForParticipant(currentParticipant.getId());
+
+        List<Event> attendedEvents = attendedEventIds.stream()
+                .map(id -> EventDAO.getInstance().read(id).orElse(null))
+                .filter(Objects::nonNull)
                 .toList();
+
 
         if (attendedEvents.isEmpty()) {
             System.out.println("You haven't participated in any events yet.");
@@ -495,6 +575,8 @@ public class FestivalService {
     public void registerAndStartMiniTournament(Scanner scanner) {
         System.out.print("Enter your ticket code to join the tournament: ");
         String code = scanner.nextLine();
+
+        List<Participant> participants = ParticipantService.getInstance().getAllParticipants();
 
         Participant userParticipant = participants.stream()
                 .filter(p -> p.getTicket() != null && p.getTicket().getCode().equalsIgnoreCase(code))
