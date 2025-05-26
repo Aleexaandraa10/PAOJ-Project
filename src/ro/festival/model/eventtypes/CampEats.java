@@ -14,7 +14,7 @@ public class CampEats extends Event {
     public CampEats(int id_event, FestivalDay day, String eventName,
                     LocalTime startTime, LocalTime endTime,
                     String vendorName, List<String> foodType, boolean openUntilLate) {
-        super(id_event, day, 0, eventName, startTime, endTime, "CAMPEATS");
+        super(id_event, day, 0, eventName, startTime, endTime);
         this.vendorName = vendorName;
         this.foodType = foodType;
         this.openUntilLate = openUntilLate;

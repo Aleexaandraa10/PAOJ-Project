@@ -17,9 +17,12 @@ public class TicketService {
         return instance;
     }
 
-    public void addTicket(Ticket t) {
-        TicketDAO.getInstance().create(t);
+    public void addTicket(Ticket ticket) {
+        if (!TicketDAO.getInstance().existsByCode(ticket.getCode())) {
+            TicketDAO.getInstance().create(ticket);
+        }
     }
+
 
     public Ticket getTicketByCode(String code) {
         return TicketDAO.getInstance().read(code).orElse(null);

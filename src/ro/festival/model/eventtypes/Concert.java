@@ -12,7 +12,7 @@ public class Concert extends Event {
     public Concert(int id_event, FestivalDay day, String eventName,
                    LocalTime startTime, LocalTime endTime,
                    String artist, String genre) {
-        super(id_event, day, 0, eventName, startTime, endTime, "CONCERT");
+        super(id_event, day, 0, eventName, startTime, endTime);
         this.artist = artist;
         this.genre = genre;
     }

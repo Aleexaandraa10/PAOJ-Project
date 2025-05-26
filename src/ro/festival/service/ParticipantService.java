@@ -7,6 +7,7 @@ import java.util.List;
 
 public class ParticipantService {
     private static ParticipantService instance;
+    private Participant lastTournamentWinner;
 
     private ParticipantService() {}
 
@@ -15,6 +16,15 @@ public class ParticipantService {
             instance = new ParticipantService();
         }
         return instance;
+    }
+
+
+    public Participant getLastTournamentWinner() {
+        return lastTournamentWinner;
+    }
+
+    public void setLastTournamentWinner(Participant winner) {
+        this.lastTournamentWinner = winner;
     }
 
     public void addParticipant(Participant p) {
@@ -36,4 +46,9 @@ public class ParticipantService {
     public void deleteParticipant(int id) {
         ParticipantDAO.getInstance().delete(id);
     }
+
+    public Participant findByTicketCode(String code) {
+        return ParticipantDAO.getInstance().findByTicketCode(code);
+    }
+
 }

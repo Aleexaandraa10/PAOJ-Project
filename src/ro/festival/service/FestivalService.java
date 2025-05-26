@@ -4,6 +4,7 @@ import ro.festival.dao.EventDAO;
 import ro.festival.dao.GlobalTalkSeatDAO;
 import ro.festival.dao.ParticipantDAO;
 import ro.festival.dao.ParticipantEventDAO;
+import ro.festival.dao.eventtypes.*;
 import ro.festival.model.*;
 import ro.festival.model.eventtypes.*;
 import java.time.LocalTime;
@@ -15,28 +16,9 @@ import java.util.stream.Collectors;
 // e ca si cum as spune: acest camp face parte din identitatea obiectului si nu se va schimba
 
 public class FestivalService {
-    // final pt un atribut = nu se mai poate schimba referinta listei
-    // dar pot modifica continutul listei --> .add(), .clear()
-
-    // Interrogations
-    private final List<Event> events;
-    private final Map<Organizer, List<Event>> organizerEvents;
-
-    // Actions
-    private final Map<Integer, List<Event>> scheduleByDay; //programul evenimentelor in fiecare zi
-
-    // pt fct 9, sa adun punctele participantului si daca a participat la un turneu din joc in Fun Zone
-    private static Participant lastTournamentWinner = null;
-
-    public FestivalService() {
-        this.events = new ArrayList<>();
-        this.scheduleByDay = new HashMap<>();
-        this.organizerEvents = new HashMap<>();
-    }
-
     public void initDemoData() {
         if (InitHelper.isInitialized()) {
-            System.out.println("Datele există deja. InitDemoData nu va rula.");
+            System.out.println("The data already exists. InitDemoData won't run.");
             return;
         }
 
@@ -53,8 +35,11 @@ public class FestivalService {
                 new TicketUnder25("T007", 180.0, 15.0),
                 new TicketUnder25("T008", 220.0, 12.5)
         );
-        for (Ticket t : demoTickets) TicketService.getInstance().addTicket(t);
 
+        for (Ticket t : demoTickets)
+            TicketService.getInstance().addTicket(t);
+
+        // le luăm din DB după cod pentru a asocia corect
         Ticket t1 = TicketService.getInstance().getTicketByCode("T001");
         Ticket t2 = TicketService.getInstance().getTicketByCode("T002");
         Ticket t3 = TicketService.getInstance().getTicketByCode("T003");
@@ -65,7 +50,7 @@ public class FestivalService {
         Ticket t8 = TicketService.getInstance().getTicketByCode("T008");
 
         // ==================================
-        //             PARTICIPANTS
+        //           PARTICIPANTS
         // ==================================
         Participant p1 = new Participant("Ioana", 28, t1);
         Participant p2 = new Participant("Mihai", 32, t2);
@@ -75,91 +60,160 @@ public class FestivalService {
         Participant p6 = new Participant("Ana", 22, t6);
         Participant p7 = new Participant("Daria", 20, t7);
         Participant p8 = new Participant("Alex", 19, t8);
+
         for (Participant p : List.of(p1, p2, p3, p4, p5, p6, p7, p8))
             ParticipantService.getInstance().addParticipant(p);
 
-        // ================================
-        //             EVENTS
-        // ================================
-        CampEats salty1 = new CampEats("Salty Delights", LocalTime.of(17, 0), LocalTime.of(2, 0), FestivalDay.DAY1,
-                "The Pretzel Cart", List.of("pretzels", "nachos", "salted peanuts"), true);
-        CampEats salty2 = new CampEats("Savoury Stop", LocalTime.of(16, 0), LocalTime.of(23, 30), FestivalDay.DAY2,
-                "Savory & Co", List.of("cheese sticks", "mini-pies", "salty muffins"), false);
-        CampEats sweetCorner = new CampEats("Sweet Corner", LocalTime.of(12, 0), LocalTime.of(22, 0), FestivalDay.DAY3,
-                "Candy House", List.of("cotton candy", "lollipops", "ice cream"), false);
-        CampEats fastFood = new CampEats("Fast & Yummy", LocalTime.of(19, 0), LocalTime.of(3, 30), FestivalDay.DAY1,
-                "Grill Bros", List.of("burgers", "fries", "cola"), true);
+        // ==================================
+        //     EVENTS + ORGANIZERS
+        // ==================================
 
-        Concert c1 = new Concert("Imagine Dragons Live", LocalTime.of(20, 0), LocalTime.of(22, 30), FestivalDay.DAY1, "Imagine Dragons", "Alternative Rock");
-        Concert c2 = new Concert("Coldplay Vibes", LocalTime.of(22, 30), LocalTime.of(0, 0), FestivalDay.DAY1, "Coldplay", "Pop Rock");
-        Concert c3 = new Concert("EDM Arena", LocalTime.of(21, 0), LocalTime.of(23, 0), FestivalDay.DAY2, "Martin Garrix", "EDM");
+        // Organizator 1: Concerte și DJ
+        List<Organizer> organizers = getOrganizers();
 
-        DJ dj1 = new DJ("Night Vibes", LocalTime.of(23, 0), LocalTime.of(1, 0), FestivalDay.DAY2, "Armin Van Buuren", true);
-        DJ dj2 = new DJ("Electro Pulse", LocalTime.of(1, 0), LocalTime.of(3, 0), FestivalDay.DAY3, "David Guetta", true);
-        DJ dj3 = new DJ("Chill Grooves", LocalTime.of(20, 0), LocalTime.of(22, 0), FestivalDay.DAY3, "Kygo", false);
 
-        Game g1 = new Game("Escape Room", true, true, 8);
-        Game g2 = new Game("Arcade Zone", false, false, 20);
-        Game g3 = new Game("Virtual Reality Arena", true, false, 10);
-        Game g4 = new Game("Foosball Tournament", false, true, 12);
-        FunZone fz1 = new FunZone("FunZone Madness", LocalTime.of(16, 0), LocalTime.of(22, 0), FestivalDay.DAY1, List.of(g1, g2));
-        FunZone fz2 = new FunZone("GameZone Fiesta", LocalTime.of(15, 0), LocalTime.of(23, 0), FestivalDay.DAY3, List.of(g3, g4));
+        // 1. Inserăm toți organizatorii în baza de date
+        for (Organizer org : organizers) {
+            OrganizerService.getInstance().addOrganizer(org);
+        }
 
-        GlobalTalks gt1 = new GlobalTalks("Future of Music", LocalTime.of(14, 0), LocalTime.of(15, 30), FestivalDay.DAY2, "Elena Popescu", "AI in Music", 8);
-        GlobalTalks gt2 = new GlobalTalks("Festival Sustainability", LocalTime.of(10, 0), LocalTime.of(11, 30), FestivalDay.DAY3, "Andrei Ionescu", "Green Festivals", 5);
-        GlobalTalks gt3 = new GlobalTalks("Marketing 4 Festivals", LocalTime.of(12, 0), LocalTime.of(13, 30), FestivalDay.DAY3, "Ioana Georgescu", "Social Media Magic", 4);
-
-        // Salvez evenimentele in DB
-        List<Event> events = List.of(salty1, salty2, sweetCorner, fastFood, c1, c2, c3, dj1, dj2, dj3, fz1, fz2, gt1, gt2, gt3);
-        for (Event e : events) EventService.getInstance().addEvent(e);
+        // 2. Inserăm evenimentele asociate fiecărui organizator, cu ID-ul corect
+        for (Organizer org : organizers) {
+            for (Event event : org.getEvents()) {
+                event.setId_organizer(org.getId());
+                if (event instanceof Concert){
+                    ConcertDAO.getInstance().create((Concert) event);
+                }
+                if (event instanceof DJ){
+                    DJDAO.getInstance().create((DJ) event);
+                }
+                if (event instanceof CampEats){
+                    CampEatsDAO.getInstance().create((CampEats) event);
+                }
+                if (event instanceof GlobalTalks){
+                    GlobalTalksDAO.getInstance().create((GlobalTalks) event);
+                }
+                if (event instanceof FunZone){
+                    FunZoneDAO.getInstance().create((FunZone) event);
+                }
+                EventService.getInstance().addEvent(event);
+            }
+        }
 
         // ===============================
         //     PARTICIPANT EVENT LINKING
         // ===============================
-        ParticipantEventDAO dao = ParticipantEventDAO.getInstance();
-        dao.addParticipantToEvent(p1.getId(), sweetCorner.getIdEvent());
-        dao.addParticipantToEvent(p2.getId(), sweetCorner.getIdEvent());
-        dao.addParticipantToEvent(p1.getId(), fastFood.getIdEvent());
-        dao.addParticipantToEvent(p3.getId(), fastFood.getIdEvent());
-        dao.addParticipantToEvent(p4.getId(), salty2.getIdEvent());
-        dao.addParticipantToEvent(p5.getId(), salty2.getIdEvent());
-        dao.addParticipantToEvent(p5.getId(), salty1.getIdEvent());
-        dao.addParticipantToEvent(p6.getId(), salty1.getIdEvent());
+        ParticipantEventDAO participantEventDAO = ParticipantEventDAO.getInstance();
 
-        dao.addParticipantToEvent(p7.getId(), fz1.getIdEvent());
-        dao.addParticipantToEvent(p8.getId(), fz1.getIdEvent());
-        dao.addParticipantToEvent(p6.getId(), fz1.getIdEvent());
-        dao.addParticipantToEvent(p1.getId(), fz1.getIdEvent());
-        dao.addParticipantToEvent(p5.getId(), fz2.getIdEvent());
-        dao.addParticipantToEvent(p4.getId(), fz2.getIdEvent());
-        dao.addParticipantToEvent(p3.getId(), fz2.getIdEvent());
-        dao.addParticipantToEvent(p1.getId(), gt1.getIdEvent());
-        dao.addParticipantToEvent(p4.getId(), gt2.getIdEvent());
-        dao.addParticipantToEvent(p3.getId(), gt2.getIdEvent());
-        dao.addParticipantToEvent(p7.getId(), gt3.getIdEvent());
-        dao.addParticipantToEvent(p8.getId(), gt3.getIdEvent());
+        // Refolosim obiectele deja instanțiate
+        List<Event> allEvents = EventService.getInstance().getAllEvents();
 
-        GlobalTalkSeatDAO gtDao = GlobalTalkSeatDAO.getInstance();
-        for (Participant p : List.of(p1, p2, p3, p4, p5, p6, p7, p8))
-            gtDao.reserveSeat(p.getId(), gt1.getIdEvent());
-        for (Participant p : List.of(p1, p2, p3, p4))
-            gtDao.reserveSeat(p.getId(), gt2.getIdEvent());
-        gtDao.reserveSeat(p8.getId(), gt3.getIdEvent());
+        Event sweetCorner = allEvents.stream().filter(e -> e.getEventName().equals("Sweet Corner")).findFirst().orElse(null);
+        Event fastFood = allEvents.stream().filter(e -> e.getEventName().equals("Fast & Yummy")).findFirst().orElse(null);
+        Event salty1 = allEvents.stream().filter(e -> e.getEventName().equals("Salty Delights")).findFirst().orElse(null);
+        Event salty2 = allEvents.stream().filter(e -> e.getEventName().equals("Savoury Stop")).findFirst().orElse(null);
+        Event fz1 = allEvents.stream().filter(e -> e.getEventName().equals("FunZone Madness")).findFirst().orElse(null);
+        Event fz2 = allEvents.stream().filter(e -> e.getEventName().equals("GameZone Fiesta")).findFirst().orElse(null);
+        Event gt1 = allEvents.stream().filter(e -> e.getEventName().equals("Future of Music")).findFirst().orElse(null);
+        Event gt2 = allEvents.stream().filter(e -> e.getEventName().equals("Festival Sustainability")).findFirst().orElse(null);
+        Event gt3 = allEvents.stream().filter(e -> e.getEventName().equals("Marketing 4 Festivals")).findFirst().orElse(null);
+
+        if (sweetCorner != null) {
+            participantEventDAO.addParticipantToEvent(p1.getId(), sweetCorner.getIdEvent());
+            participantEventDAO.addParticipantToEvent(p2.getId(), sweetCorner.getIdEvent());
+        }
+        if (fastFood != null) {
+            participantEventDAO.addParticipantToEvent(p1.getId(), fastFood.getIdEvent());
+            participantEventDAO.addParticipantToEvent(p3.getId(), fastFood.getIdEvent());
+        }
+        if (salty2 != null) {
+            participantEventDAO.addParticipantToEvent(p4.getId(), salty2.getIdEvent());
+            participantEventDAO.addParticipantToEvent(p5.getId(), salty2.getIdEvent());
+        }
+        if (salty1 != null) {
+            participantEventDAO.addParticipantToEvent(p5.getId(), salty1.getIdEvent());
+            participantEventDAO.addParticipantToEvent(p6.getId(), salty1.getIdEvent());
+        }
+        if (fz1 != null) {
+            for (Participant p : List.of(p7, p8, p6, p1))
+                participantEventDAO.addParticipantToEvent(p.getId(), fz1.getIdEvent());
+        }
+        if (fz2 != null) {
+            for (Participant p : List.of(p5, p4, p3))
+                participantEventDAO.addParticipantToEvent(p.getId(), fz2.getIdEvent());
+        }
+        if (gt1 != null) participantEventDAO.addParticipantToEvent(p1.getId(), gt1.getIdEvent());
+        if (gt2 != null) {
+            participantEventDAO.addParticipantToEvent(p4.getId(), gt2.getIdEvent());
+            participantEventDAO.addParticipantToEvent(p3.getId(), gt2.getIdEvent());
+        }
+        if (gt3 != null) {
+            participantEventDAO.addParticipantToEvent(p7.getId(), gt3.getIdEvent());
+            participantEventDAO.addParticipantToEvent(p8.getId(), gt3.getIdEvent());
+        }
 
         // ===============================
-        //             ORGANIZERS
+        //  GLOBAL TALK SEAT RESERVATIONS
         // ===============================
-        Organizer org1 = new Organizer("Stage Masters", "Cristian D.", List.of(c1, c2, c3, dj1, dj2, dj3));
-        Organizer org2 = new Organizer("Taste & Joy", "Alina P.", List.of(salty1, salty2, sweetCorner, fastFood));
-        Organizer org3 = new Organizer("Experience Lab", "Mihai R.", List.of(fz1, fz2, gt1, gt2, gt3));
-        organizerEvents.put(org1, org1.getEvents());
-        organizerEvents.put(org2, org2.getEvents());
-        organizerEvents.put(org3, org3.getEvents());
+        GlobalTalkSeatDAO seatDAO = GlobalTalkSeatDAO.getInstance();
+        if (gt1 != null) {
+            for (Participant p : List.of(p1, p2, p3, p4, p5, p6, p7, p8))
+                seatDAO.reserveSeat(p.getId(), gt1.getIdEvent());
+        }
+        if (gt2 != null) {
+            for (Participant p : List.of(p1, p2, p3, p4))
+                seatDAO.reserveSeat(p.getId(), gt2.getIdEvent());
+        }
+        if (gt3 != null)
+            seatDAO.reserveSeat(p8.getId(), gt3.getIdEvent());
 
+        // ===============================
+        //       FINALIZARE INIT
+        // ===============================
         InitHelper.setInitialized(true);
+        System.out.println("Demo data has been initialized successfully.");
     }
 
+    private static List<Organizer> getOrganizers() {
+        Organizer org1 = new Organizer("Stage Masters", "Cristian D.", List.of(
+                new Concert("Imagine Dragons Live", LocalTime.of(20, 0), LocalTime.of(22, 30), FestivalDay.DAY1, "Imagine Dragons", "Alternative Rock"),
+                new Concert("Coldplay Vibes", LocalTime.of(22, 30), LocalTime.of(0, 0), FestivalDay.DAY1, "Coldplay", "Pop Rock"),
+                new Concert("EDM Arena", LocalTime.of(21, 0), LocalTime.of(23, 0), FestivalDay.DAY2, "Martin Garrix", "EDM"),
+                new DJ("Night Vibes", LocalTime.of(23, 0), LocalTime.of(1, 0), FestivalDay.DAY2, "Armin Van Buuren", true),
+                new DJ("Electro Pulse", LocalTime.of(1, 0), LocalTime.of(3, 0), FestivalDay.DAY3, "David Guetta", true),
+                new DJ("Chill Grooves", LocalTime.of(20, 0), LocalTime.of(22, 0), FestivalDay.DAY3, "Kygo", false)
+        ));
 
+        // Organizator 2: Food
+        Organizer org2 = new Organizer("Taste & Joy", "Alina P.", List.of(
+                new CampEats("Salty Delights", LocalTime.of(17, 0), LocalTime.of(2, 0), FestivalDay.DAY1, "The Pretzel Cart", List.of("pretzels", "nachos", "salted peanuts"), true),
+                new CampEats("Savoury Stop", LocalTime.of(16, 0), LocalTime.of(23, 30), FestivalDay.DAY2, "Savory & Co", List.of("cheese sticks", "mini-pies", "salty muffins"), false),
+                new CampEats("Sweet Corner", LocalTime.of(12, 0), LocalTime.of(22, 0), FestivalDay.DAY3, "Candy House", List.of("cotton candy", "lollipops", "ice cream"), false),
+                new CampEats("Fast & Yummy", LocalTime.of(19, 0), LocalTime.of(3, 30), FestivalDay.DAY1, "Grill Bros", List.of("burgers", "fries", "cola"), true)
+        ));
+
+        // Organizator 3: FunZone + Talks
+        Organizer org3 = new Organizer("Experience Lab", "Mihai R.", List.of(
+                new FunZone("FunZone Madness", LocalTime.of(16, 0), LocalTime.of(22, 0), FestivalDay.DAY1,
+                        List.of(
+                                new Game("Escape Room", true, true, 8),
+                                new Game("Arcade Zone", false, false, 20)
+                        )
+                ),
+                new FunZone("GameZone Fiesta", LocalTime.of(15, 0), LocalTime.of(23, 0), FestivalDay.DAY3,
+                        List.of(
+                                new Game("Virtual Reality Arena", true, false, 10),
+                                new Game("Foosball Tournament", false, true, 12)
+                        )
+                ),
+                new GlobalTalks("Future of Music", LocalTime.of(14, 0), LocalTime.of(15, 30), FestivalDay.DAY2, "Elena Popescu", "AI in Music", 8),
+                new GlobalTalks("Festival Sustainability", LocalTime.of(10, 0), LocalTime.of(11, 30), FestivalDay.DAY3, "Andrei Ionescu", "Green Festivals", 5),
+                new GlobalTalks("Marketing 4 Festivals", LocalTime.of(12, 0), LocalTime.of(13, 30), FestivalDay.DAY3, "Ioana Georgescu", "Social Media Magic", 4)
+        ));
+
+        List<Organizer> organizers = List.of(org1, org2, org3);
+        return organizers;
+    }
 
     // =================================================================================================================
     //                                           APPLICATION FUNCTIONALITIES - PARTICIPANTS
@@ -188,24 +242,36 @@ public class FestivalService {
     public void viewParticipationInsights() {
         System.out.println("----- Festival Participation Insights -----");
 
-        String mostCommonType = events.stream()
-                .collect(Collectors.groupingBy(
-                        e -> e.getClass().getSimpleName(),     // grupăm după tipul clasei (ex: "Concert")
-                        Collectors.counting()                        //  numărăm câte apariții are fiecare tip
-                )) //pana aici am facut Map<String, Long> unde String este tipul ev si Long este nr de aparitii
-                .entrySet().stream()                                 //  convertim mapa într-un stream de entry-uri
-                .max(Map.Entry.comparingByValue())        //  căutăm entry-ul cu cea mai mare valoare (adică cel mai frecvent)
-                .map(Map.Entry::getKey)                   //  extragem cheia (adică tipul clasei)
-                .orElse("N/A");                     //  dacă nu există niciun element, returnăm "N/A"
+        Map<String, Long> typeFrequencies = new HashMap<>();
 
+        // Obține evenimente din fiecare DAO specializat
+        List<Concert> concerts = ConcertDAO.getInstance().getAllConcerts();
+        typeFrequencies.put("Concert", (long) concerts.size());
+
+        List<DJ> djs = DJDAO.getInstance().getAllDJs();
+        typeFrequencies.put("DJ", (long) djs.size());
+
+        List<GlobalTalks> talks = GlobalTalksDAO.getInstance().getAllGlobalTalks();
+        typeFrequencies.put("GlobalTalks", (long) talks.size());
+
+        List<CampEats> eats = CampEatsDAO.getInstance().getAllCampEats();
+        typeFrequencies.put("CampEats", (long) eats.size());
+
+        List<FunZone> funZones = FunZoneDAO.getInstance().getAllFunZones();
+        typeFrequencies.put("FunZone", (long) funZones.size());
+
+        // Găsește cel mai frecvent tip
+        String mostCommonType = typeFrequencies.entrySet().stream()
+                .max(Map.Entry.comparingByValue())
+                .map(Map.Entry::getKey)
+                .orElse("N/A");
 
         System.out.println("\nMost frequent event type: " + mostCommonType);
 
-        // === Participanții cu cele mai multe participări ===
+        // === Top 3 participanți ===
         Map<Integer, Long> participationCounts = ParticipantEventDAO.getInstance().getParticipationCounts();
 
         System.out.println("\nTop 3 participants by number of attended events:");
-
         participationCounts.entrySet().stream()
                 .sorted(Map.Entry.<Integer, Long>comparingByValue().reversed())
                 .limit(3)
@@ -217,25 +283,26 @@ public class FestivalService {
                 });
     }
 
+
     // === 4. Show all DJ sets on the main stage ===
     public void printDJOnMainStage(){
-        events.stream()
-                .filter(e-> e instanceof DJ) //true doar daca e este un DJ
-                .map( e -> (DJ) e) //transforma fiecare Event din stream intr-un ob de tip DJ, folosind un cast
+        List<DJ> djs = DJDAO.getInstance().getAllDJs();
+        djs.stream()
                 .filter(DJ::getIsMainStage)
                 .forEach(System.out::println);
+
     }
 
     // === 5. Show all night-games in FunZone ===
-    public void printAllNightGames(){
-        events.stream()
-                .filter( e -> e instanceof FunZone)
-                .map( e -> (FunZone) e) //necesar sa facem ca sa putem accesa metode ale clasei FunZone
-                .flatMap(fz -> fz.getGames().stream()) //"desface" toate listele de jocuri intr-un
-                // singur flux continuu
-                .filter(Game::isOpenAllNight) //pastreaza doar jocurile deschise toata noaptea
+    public void printAllNightGames() {
+        List<FunZone> funZones = FunZoneDAO.getInstance().getAllFunZones();
+
+        funZones.stream()
+                .flatMap(fz -> fz.getGames().stream())
+                .filter(Game::isOpenAllNight)
                 .forEach(System.out::println);
     }
+
 
     // === 6. Buy a ticket + add participant ===
     public void buyTicketInteractively(Scanner scanner) {
@@ -303,10 +370,7 @@ public class FestivalService {
 
     // === 7. Reserve a seat for a limited-capacity event ===
     public void reserveSeat_GlobalTalk(Scanner scanner) {
-        List<GlobalTalks> talks = events.stream()
-                .filter(e -> e instanceof GlobalTalks)
-                .map(e -> (GlobalTalks) e)
-                .toList();
+        List<GlobalTalks> talks = GlobalTalksDAO.getInstance().getAllGlobalTalks();
 
         if (talks.isEmpty()) {
             System.out.println("No global talks found");
@@ -347,7 +411,6 @@ public class FestivalService {
         System.out.print("Your age? ");
         int age = Integer.parseInt(scanner.nextLine());
 
-        // caut participantul în baza de date
         Participant participant = ParticipantDAO.getInstance().findByNameAndAge(name, age);
 
         if (participant == null) {
@@ -360,7 +423,7 @@ public class FestivalService {
         System.out.println("Reservation confirmed for " + selected.getEventName() + "!");
 
         System.out.println("\nThe participants for this event are:");
-        reserved = GlobalTalkSeatDAO.getInstance().getParticipantsForTalk(talkId); // refacem lista cu cel nou inclus
+        reserved = GlobalTalkSeatDAO.getInstance().getParticipantsForTalk(talkId);
         for (Participant p : reserved) {
             System.out.println(" - " + p.getParticipantName());
         }
@@ -371,6 +434,7 @@ public class FestivalService {
 
     // === 8. Find events that start after a specific time ===
     public void printEventsByStartTime(LocalTime time){
+        List<Event> events = EventService.getInstance().getAllEvents();
         events.stream()
                 .filter(e -> e.getStartTime().isAfter(time))
                 .forEach(System.out::println);
@@ -385,7 +449,7 @@ public class FestivalService {
         System.out.println("You spent " + cost + " points. Remaining: " + (eventPoints - cost));
     }
 
-    public void calculatePoints(Scanner scanner){
+    public void calculatePoints(Scanner scanner) {
         System.out.print("Enter your ticket code: ");
         String code = scanner.nextLine();
 
@@ -401,15 +465,25 @@ public class FestivalService {
             return;
         }
 
-        // evenimentul la care a participat currentParticipant
         List<Integer> attendedEventIds = ParticipantEventDAO.getInstance()
                 .getEventIdsForParticipant(currentParticipant.getId());
 
         List<Event> attendedEvents = attendedEventIds.stream()
-                .map(id -> EventDAO.getInstance().read(id).orElse(null))
+                .map(id -> {
+                    // încercăm fiecare DAO în parte
+                    Event event = FunZoneDAO.getInstance().read(id).orElse(null);
+                    if (event != null) return event;
+
+                    event = GlobalTalksDAO.getInstance().read(id).orElse(null);
+                    if (event != null) return event;
+
+                    event = CampEatsDAO.getInstance().read(id).orElse(null);
+                    if (event != null) return event;
+
+                    return EventDAO.getInstance().read(id).orElse(null); // fallback
+                })
                 .filter(Objects::nonNull)
                 .toList();
-
 
         if (attendedEvents.isEmpty()) {
             System.out.println("You haven't participated in any events yet.");
@@ -418,7 +492,9 @@ public class FestivalService {
 
         System.out.println("\nYou’ve participated in:");
         attendedEvents.forEach(e -> System.out.println("• " + e.getEventName()));
-        if (lastTournamentWinner != null && lastTournamentWinner.equals(currentParticipant)){
+
+        Participant lastWinner = ParticipantService.getInstance().getLastTournamentWinner();
+        if (lastWinner != null && lastWinner.equals(currentParticipant)) {
             System.out.println("• MiniTournament (winner)");
         }
 
@@ -437,10 +513,11 @@ public class FestivalService {
         }
 
         System.out.println("Points from ticket and events: " + eventPoints);
-        if (lastTournamentWinner != null && lastTournamentWinner.equals(currentParticipant)) {
+        if (lastWinner != null && lastWinner.equals(currentParticipant))
+        {
             System.out.println("Bonus from tournament: 50");
             eventPoints += 50;
-            System.out.println("Total points: " + (eventPoints));
+            System.out.println("Total points: " + eventPoints);
         }
 
         Map<String, Integer> prizes = Map.of(
@@ -465,17 +542,13 @@ public class FestivalService {
         }
     }
 
+
     // === 10. Join the FunZone Mini-Tournament ===
     public void registerAndStartMiniTournament(Scanner scanner) {
         System.out.print("Enter your ticket code to join the tournament: ");
         String code = scanner.nextLine();
 
-        List<Participant> participants = ParticipantService.getInstance().getAllParticipants();
-
-        Participant userParticipant = participants.stream()
-                .filter(p -> p.getTicket() != null && p.getTicket().getCode().equalsIgnoreCase(code))
-                .findFirst()
-                .orElse(null);
+        Participant userParticipant = ParticipantService.getInstance().findByTicketCode(code);
 
         if (userParticipant == null) {
             System.out.println("Invalid ticket code. Registration failed.");
@@ -496,7 +569,8 @@ public class FestivalService {
             return;
         }
 
-        List<Participant> others = participants.stream()
+        List<Participant> allParticipants = ParticipantDAO.getInstance().readAll();
+        List<Participant> others = allParticipants.stream()
                 .filter(p -> !p.equals(userParticipant))
                 .collect(Collectors.toList());
 
@@ -519,7 +593,8 @@ public class FestivalService {
         Participant winner = runTournamentRoundFlexible(tournamentPlayers, "First Round");
         System.out.println("\n🏆 The Mini-Tournament Winner is: " + winner.getParticipantName() + "! 🏆");
 
-        lastTournamentWinner = winner;
+        ParticipantService.getInstance().setLastTournamentWinner(winner);
+
         System.out.println(winner.getParticipantName() +" earned 50 points!");
         System.out.println("\nWinner's ticket code: " + winner.getTicket().getCode());
     }
@@ -581,6 +656,7 @@ public class FestivalService {
         return runTournamentRoundFlexible(winners, nextRound);
     }
 
+
     // =================================================================================================================
     //                                           APPLICATION FUNCTIONALITIES - ORGANIZERS
     // =================================================================================================================
@@ -589,7 +665,7 @@ public class FestivalService {
     public void printScheduleForDay(int day) {
         FestivalDay selectedDay = FestivalDay.valueOf("DAY" + day);
 
-        List<Event> dayEvents = scheduleByDay.getOrDefault(day, new ArrayList<>());
+        List<Event> dayEvents = EventService.getInstance().getEventsByDay(selectedDay);
 
         if (dayEvents.isEmpty()) {
             System.out.println("No events scheduled for " + selectedDay);
@@ -597,39 +673,51 @@ public class FestivalService {
         }
 
         System.out.println("Events scheduled for " + selectedDay + ":");
-        dayEvents.stream()
-                .sorted(Comparator.comparing(Event::getStartTime))
-                .forEach(System.out::println);
+        dayEvents.forEach(System.out::println);
     }
+
 
     // === 2. View all organizers and their events ===
-    public void printOrganizersAndEvents(){
-        organizerEvents.forEach((organizer, eventList) -> {
-            System.out.println("Organizers: " + organizer.getOrganizerName());
-            eventList.forEach(e->System.out.println("    - " + e));
-        });
+    public void printOrganizersAndEvents() {
+        List<Organizer> organizers = OrganizerService.getInstance().getAllOrganizers();
+        List<Event> allEvents = EventService.getInstance().getAllEvents();
+
+        for (Organizer organizer : organizers) {
+            System.out.println("Organizer: " + organizer.getOrganizerName());
+
+            List<Event> eventsForOrganizer = allEvents.stream()
+                    .filter(e -> e.getId_organizer() == organizer.getId())
+                    .toList();
+
+            if (eventsForOrganizer.isEmpty()) {
+                System.out.println("    (No events)");
+            } else {
+                eventsForOrganizer.forEach(e -> System.out.println("    - " + e));
+            }
+        }
     }
 
-    // === 3. Group events by type ===
-    public void groupEventsByType(){
-        Map<String, List<Event>> grouped = events.stream()
-                .collect(Collectors.groupingBy(e->e.getClass().getSimpleName()));
 
-        // pentru fiecare el. e vreau sa fie grupat dupa e.getClass().getSimpleName(), deci se creeaza automat map
-        // String din cheie este rezultatul e.getClass().getSimpleName()
-        //.collect() este o op terminala intr-un Stream, care transforma fluxul de date intr-o colectie noua
-        // .collect() = ok, am parcurs stream-ul, acum vreau sa strang totul intr-un rezultat final
+    // === 3. Group events by type ===
+    public void groupEventsByType() {
+        Map<String, List<Event>> grouped = new LinkedHashMap<>();
+
+        grouped.put("Concert", new ArrayList<>(ConcertDAO.getInstance().getAllConcerts()));
+        grouped.put("DJ", new ArrayList<>(DJDAO.getInstance().getAllDJs()));
+        grouped.put("GlobalTalks", new ArrayList<>(GlobalTalksDAO.getInstance().getAllGlobalTalks()));
+        grouped.put("CampEats", new ArrayList<>(CampEatsDAO.getInstance().getAllCampEats()));
+        grouped.put("FunZone", new ArrayList<>(FunZoneDAO.getInstance().getAllFunZones()));
 
         grouped.forEach((type, eventList) -> {
             System.out.println("\n=== " + type + " ===");
             eventList.forEach(System.out::println);
         });
-        // .getClass() --> Concert.class
-        // .getSimpleName() --> Concert
     }
+
 
     // === 4. Order all events by start time ===
     public void printEventsOrderedByStartTime() {
+        List<Event> events = EventService.getInstance().getAllEvents();
         events.stream()
                 .sorted(Comparator.comparing(Event::getStartTime))
                 .forEach(System.out::println);
@@ -638,56 +726,57 @@ public class FestivalService {
 
 
     // === 5. Move an event to another day ===
-    public void moveEvent(Scanner scanner){
-        if (scheduleByDay.isEmpty()) {
-            System.out.println("No events scheduled.");
+    public void moveEvent(Scanner scanner) {
+        System.out.print("Please choose the day (1-3): ");
+        int dayEvent = Integer.parseInt(scanner.nextLine());
+
+        if (dayEvent < 1 || dayEvent > 3) {
+            System.out.println("Invalid day.");
             return;
         }
 
-        System.out.println("Available events:");
-        scheduleByDay.forEach((day, eventList) -> {
-            System.out.println("=============");
-            System.out.println("Day: " + day);
-            System.out.println("=============");
-            System.out.println("Events: ");
-            for(int i=0; i<eventList.size(); i++){
-                System.out.println((i+1) + ". " + eventList.get(i).toString());
-            }
-            System.out.println();
-        });
-        System.out.println("Please choose the day: ");
-        int dayEvent = Integer.parseInt(scanner.nextLine());
-        System.out.println("Please choose the number of the event you would like to move: ");
+        FestivalDay selectedDay = FestivalDay.valueOf("DAY" + dayEvent);
+        List<Event> dayEvents = EventService.getInstance().getEventsByDay(selectedDay);
+
+        if (dayEvents.isEmpty()) {
+            System.out.println("No events on this day.");
+            return;
+        }
+
+        System.out.println("Events for DAY" + dayEvent + ":");
+        for (int i = 0; i < dayEvents.size(); i++) {
+            System.out.println((i + 1) + ". " + dayEvents.get(i));
+        }
+
+        System.out.print("Please choose the number of the event you would like to move: ");
         int eventIndex = Integer.parseInt(scanner.nextLine()) - 1;
 
-        if (eventIndex < 0 || eventIndex >= scheduleByDay.get(dayEvent).size()){
+        if (eventIndex < 0 || eventIndex >= dayEvents.size()) {
             System.out.println("Invalid selection.");
             return;
         }
 
-        Event selectedEvent = scheduleByDay.get(dayEvent).get(eventIndex);
+        Event selectedEvent = dayEvents.get(eventIndex);
 
         System.out.print("Enter the new day (1-3): ");
         int newDay = Integer.parseInt(scanner.nextLine());
 
         if (newDay < 1 || newDay > 3) {
-            System.out.println("Invalid day.");
+            System.out.println("Invalid new day.");
             return;
         }
 
         if (newDay == dayEvent) {
-            System.out.println("The event is already on that day.");
+            System.out.println("Event is already on this day.");
             return;
         }
 
-        scheduleByDay.get(dayEvent).remove(selectedEvent);
-        // fac asa pt ca daca puneam scheduleByDay.get(newDay).add(selectedEvent) mi-ar fi putut arunca NullPointerException
-        // in cazul in care ziua 1,2 sau 3 nu exista niciun event
-        // cu computeIfAbsent daca in ziua 3 de ex nu e niciun event, se init o noua lista si se adauga eventul
-        scheduleByDay.computeIfAbsent(newDay, k -> new ArrayList<>()).add(selectedEvent);
+        selectedEvent.setDay(FestivalDay.valueOf("DAY" + newDay));
+        EventService.getInstance().updateEvent(selectedEvent);
 
-        System.out.println("Event '" + selectedEvent.getEventName() + "' has been moved from Day " + dayEvent + " to Day " + newDay + ".");
-        System.out.println("If you want to see your event, please select 1 in the menu!");
+        System.out.println("✅ Event '" + selectedEvent.getEventName() + "' has been moved to DAY" + newDay + ".");
     }
+
+
 
 }

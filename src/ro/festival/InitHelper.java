@@ -8,24 +8,32 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class InitHelper {
+    private static boolean initialized = false;
+
     public static boolean isInitialized() {
+        // Nu setăm `initialized` decât dacă toate tabelele sunt populate
         try (Connection conn = DBConnection.connect()) {
-            return tableHasData(conn, "Ticket")
-                    || tableHasData(conn, "TicketUnder25")
-                    || tableHasData(conn, "Participant")
-                    || tableHasData(conn, "Event")
-                    || tableHasData(conn, "Concert")
-                    || tableHasData(conn, "DJ")
-                    || tableHasData(conn, "GlobalTalks")
-                    || tableHasData(conn, "FunZone")
-                    || tableHasData(conn, "Game")
-                    || tableHasData(conn, "CampEats")
-                    || tableHasData(conn, "ParticipantEvent")
-                    || tableHasData(conn, "GlobalTalkSeat")
-                    || tableHasData(conn, "Organizer");
+            boolean allPopulated =
+                    tableHasData(conn, "Ticket") &&
+                            tableHasData(conn, "TicketUnder25") &&
+                            tableHasData(conn, "Participant") &&
+                            tableHasData(conn, "Event") &&
+                            tableHasData(conn, "Concert") &&
+                            tableHasData(conn, "DJ") &&
+                            tableHasData(conn, "GlobalTalks") &&
+                            tableHasData(conn, "FunZone") &&
+                            tableHasData(conn, "Game") &&
+                            tableHasData(conn, "CampEats") &&
+                            tableHasData(conn, "ParticipantEvent") &&
+                            tableHasData(conn, "GlobalTalkSeat") &&
+                            tableHasData(conn, "Organizer");
+
+            initialized = allPopulated;
+            return allPopulated;
+
         } catch (SQLException e) {
             e.printStackTrace();
-            return true;
+            return false; // presupunem că baza nu e inițializată dacă apare o eroare
         }
     }
 
@@ -35,12 +43,13 @@ public class InitHelper {
              ResultSet rs = stmt.executeQuery()) {
             return rs.next();
         } catch (SQLException e) {
+            System.err.println("Eroare la verificarea tabelei: " + tableName);
             e.printStackTrace();
-            return true;
+            return false;
         }
     }
 
     public static void setInitialized(boolean value) {
+        initialized = value;
     }
-
 }

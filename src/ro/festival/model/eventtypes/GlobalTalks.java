@@ -13,7 +13,7 @@ public class GlobalTalks extends Event {
     public GlobalTalks(int id_event, FestivalDay day, String eventName,
                        LocalTime startTime, LocalTime endTime,
                        String speakerName, String topic, int seats) {
-        super(id_event, day, 0, eventName, startTime, endTime, "GLOBAL_TALK");
+        super(id_event, day, 0, eventName, startTime, endTime);
         this.speakerName = speakerName;
         this.topic = topic;
         this.seats = seats;

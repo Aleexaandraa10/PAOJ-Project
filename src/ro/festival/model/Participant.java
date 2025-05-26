@@ -43,4 +43,18 @@ public class Participant {
                 "\nAge: " + age +
                 (ticket != null ? "\n" + ticket : "\nNo ticket assigned yet.");
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Participant that = (Participant) o;
+        return id == that.id; // sau getId() == that.getId();
+    }
+
+    @Override
+    public int hashCode() {
+        return Integer.hashCode(id);
+    }
+
 }

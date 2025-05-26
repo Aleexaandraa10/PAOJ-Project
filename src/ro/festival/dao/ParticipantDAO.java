@@ -131,7 +131,7 @@ public class ParticipantDAO extends BaseDAO<Participant, Integer> {
     }
 
     public Participant findByNameAndAge(String name, int age) {
-        String sql = "SELECT * FROM Participant WHERE name = ? AND age = ?";
+        String sql = "SELECT * FROM Participant WHERE participantName = ? AND age = ?";
         try (Connection conn = DBConnection.connect();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, name);
@@ -140,9 +140,9 @@ public class ParticipantDAO extends BaseDAO<Participant, Integer> {
 
             if (rs.next()) {
                 Participant p = new Participant(
-                        rs.getString("name"),
+                        rs.getString("participantName"),
                         rs.getInt("age"),
-                        TicketService.getInstance().getTicketByCode(rs.getString("ticket_code"))
+                        TicketService.getInstance().getTicketByCode(rs.getString("code"))
                 );
                 p.setId(rs.getInt("id_participant"));
                 return p;
@@ -152,5 +152,30 @@ public class ParticipantDAO extends BaseDAO<Participant, Integer> {
         }
         return null;
     }
+
+    public Participant findByTicketCode(String code) {
+        String sql = "SELECT * FROM Participant WHERE code = ?";
+        try (Connection conn = DBConnection.connect();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, code);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                return new Participant(
+                        rs.getInt("id_participant"),
+                        rs.getString("participantName"),
+                        rs.getInt("age"),
+                        TicketDAO.getInstance().read(rs.getString("code")).orElse(null)
+                );
+            }
+        } catch (SQLException e) {
+            System.err.println("Error finding participant by ticket code:");
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
 
 }
