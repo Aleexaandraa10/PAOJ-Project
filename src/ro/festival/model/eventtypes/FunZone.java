@@ -13,7 +13,7 @@ public class FunZone extends Event {
     public FunZone(int id_event, FestivalDay day, String eventName,
                    LocalTime startTime, LocalTime endTime,
                    List<Game> games) {
-        super(id_event, day, 0, eventName, startTime, endTime, "FUNZONE");
+        super(id_event, day, 0, eventName, startTime, endTime);
         this.games = games;
     }
 

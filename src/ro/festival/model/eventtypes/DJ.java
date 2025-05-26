@@ -12,7 +12,7 @@ public class DJ extends Event {
     public DJ(int id_event, FestivalDay day, String eventName,
               LocalTime startTime, LocalTime endTime,
               String djName, boolean isMainStage) {
-        super(id_event, day, 0, eventName, startTime, endTime, "DJ");
+        super(id_event, day, 0, eventName, startTime, endTime);
         this.djName = djName;
         this.isMainStage = isMainStage;
     }

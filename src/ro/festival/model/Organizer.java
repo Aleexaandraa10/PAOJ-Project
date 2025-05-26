@@ -3,7 +3,7 @@ package ro.festival.model;
 import java.util.List;
 
 public class Organizer {
-    private final int id_organizer;
+    private int id_organizer;
     private final String companyName;
     private final String organizerName;
     private final List<Event> events;
@@ -22,6 +22,11 @@ public class Organizer {
     public int getId() {
         return id_organizer;
     }
+
+    public void setId(int id_organizer) {
+        this.id_organizer = id_organizer;
+    }
+
 
     public String getCompanyName() {
         return companyName;

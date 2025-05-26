@@ -164,4 +164,18 @@ public class TicketDAO extends BaseDAO<Ticket, String> {
         return tickets;
     }
 
+    public boolean existsByCode(String code) {
+        String sql = "SELECT 1 FROM Ticket WHERE code = ? LIMIT 1";
+        try (Connection conn = DBConnection.connect();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, code);
+            ResultSet rs = stmt.executeQuery();
+            return rs.next();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+
 }

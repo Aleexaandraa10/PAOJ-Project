@@ -3,6 +3,8 @@ package ro.festival.dao;
 import ro.festival.database.DBConnection;
 import ro.festival.model.Event;
 import ro.festival.model.FestivalDay;
+import ro.festival.model.*;
+import ro.festival.model.eventtypes.*;
 
 import java.sql.*;
 import java.time.LocalTime;
@@ -23,8 +25,9 @@ public class EventDAO extends BaseDAO<Event, Integer> {
 
     @Override
     public void create(Event event) {
-        String sql = "INSERT INTO Event (day, id_organizer, eventName, startTime, endTime, eventType) VALUES (?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO Event (day, id_organizer, eventName, startTime, endTime) VALUES (?, ?, ?, ?, ?)";
         try (Connection conn = DBConnection.connect();
+             // după ce rulez acest statement, vreau să am acces la valorile generate automat de DB, cum ar fi AUTO_INCREMENT-urile.
              PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             stmt.setString(1, event.getDay().name());
@@ -33,7 +36,6 @@ public class EventDAO extends BaseDAO<Event, Integer> {
             stmt.setString(3, event.getEventName());
             stmt.setTime(4, Time.valueOf(event.getStartTime()));
             stmt.setTime(5, Time.valueOf(event.getEndTime()));
-            stmt.setString(6, event.getEventType());
             stmt.executeUpdate();
 
             ResultSet keys = stmt.getGeneratedKeys();
@@ -63,8 +65,7 @@ public class EventDAO extends BaseDAO<Event, Integer> {
                         rs.getInt("id_organizer"),
                         rs.getString("eventName"),
                         rs.getTime("startTime").toLocalTime(),
-                        rs.getTime("endTime").toLocalTime(),
-                        rs.getString("eventType")
+                        rs.getTime("endTime").toLocalTime()
                 );
                 return Optional.of(event);
             }
@@ -79,7 +80,7 @@ public class EventDAO extends BaseDAO<Event, Integer> {
 
     @Override
     public void update(Event event) {
-        String sql = "UPDATE Event SET day = ?, id_organizer = ?, eventName = ?, startTime = ?, endTime = ?, eventType = ? WHERE id_event = ?";
+        String sql = "UPDATE Event SET day = ?, id_organizer = ?, eventName = ?, startTime = ?, endTime = ? WHERE id_event = ?";
         try (Connection conn = DBConnection.connect();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
@@ -88,8 +89,7 @@ public class EventDAO extends BaseDAO<Event, Integer> {
             stmt.setString(3, event.getEventName());
             stmt.setTime(4, Time.valueOf(event.getStartTime()));
             stmt.setTime(5, Time.valueOf(event.getEndTime()));
-            stmt.setString(6, event.getEventType());
-            stmt.setInt(7, event.getIdEvent());
+            stmt.setInt(6, event.getIdEvent());
             stmt.executeUpdate();
 
         } catch (SQLException e) {
@@ -116,6 +116,7 @@ public class EventDAO extends BaseDAO<Event, Integer> {
     public List<Event> readAll() {
         List<Event> events = new ArrayList<>();
         String sql = "SELECT * FROM Event";
+
         try (Connection conn = DBConnection.connect();
              PreparedStatement stmt = conn.prepareStatement(sql);
              ResultSet rs = stmt.executeQuery()) {
@@ -127,18 +128,20 @@ public class EventDAO extends BaseDAO<Event, Integer> {
                         rs.getInt("id_organizer"),
                         rs.getString("eventName"),
                         rs.getTime("startTime").toLocalTime(),
-                        rs.getTime("endTime").toLocalTime(),
-                        rs.getString("eventType")
+                        rs.getTime("endTime").toLocalTime()
                 );
                 events.add(event);
             }
 
         } catch (SQLException e) {
-            System.err.println("Error reading all events:");
+            System.err.println("Error reading all base events:");
             e.printStackTrace();
         }
+
         return events;
     }
+
+
     public boolean existsByNameAndTime(String name, LocalTime start, LocalTime end) {
         String sql = "SELECT COUNT(*) FROM Event WHERE eventName = ? AND startTime = ? AND endTime = ?";
 
@@ -161,5 +164,36 @@ public class EventDAO extends BaseDAO<Event, Integer> {
 
         return false;
     }
+
+    public List<Event> getEventsByDay(FestivalDay day) {
+        List<Event> result = new ArrayList<>();
+        String sql = "SELECT * FROM Event WHERE day = ? ORDER BY startTime";
+
+        try (Connection conn = DBConnection.connect();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, day.name());
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                Event event = new Event(
+                        rs.getInt("id_event"),
+                        FestivalDay.valueOf(rs.getString("day")),
+                        rs.getInt("id_organizer"),
+                        rs.getString("eventName"),
+                        rs.getTime("startTime").toLocalTime(),
+                        rs.getTime("endTime").toLocalTime()
+                );
+                result.add(event);
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Error reading events by day:");
+            e.printStackTrace();
+        }
+
+        return result;
+    }
+
 
 }
