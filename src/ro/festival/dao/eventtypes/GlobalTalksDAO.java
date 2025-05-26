@@ -11,6 +11,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class GlobalTalksDAO {
 
@@ -21,6 +22,42 @@ public class GlobalTalksDAO {
             instance = new GlobalTalksDAO();
         }
         return instance;
+    }
+
+    public Optional<GlobalTalks> read(int id) {
+        String sql = """
+        SELECT e.id_event, e.day, e.id_organizer, e.eventName, e.startTime, e.endTime,
+               g.speakerName, g.topic, g.seats
+        FROM Event e
+        JOIN GlobalTalks g ON e.id_event = g.id_event
+        WHERE e.id_event = ?
+    """;
+
+        try (Connection conn = DBConnection.connect();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, id);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                GlobalTalks gt = new GlobalTalks(
+                        id,
+                        FestivalDay.valueOf(rs.getString("day")),
+                        rs.getString("eventName"),
+                        rs.getTime("startTime").toLocalTime(),
+                        rs.getTime("endTime").toLocalTime(),
+                        rs.getString("speakerName"),
+                        rs.getString("topic"),
+                        rs.getInt("seats")
+                );
+                gt.setId_organizer(rs.getInt("id_organizer"));
+                return Optional.of(gt);
+            }
+        } catch (SQLException e) {
+            System.err.println("Error reading GlobalTalks:");
+            e.printStackTrace();
+        }
+        return Optional.empty();
     }
 
     public void create(GlobalTalks talk) {

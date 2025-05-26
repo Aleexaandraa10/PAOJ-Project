@@ -2,6 +2,10 @@ package ro.festival.model;
 
 import java.time.LocalTime;
 
+
+// final pt un atribut = nu se mai poate schimba referinta listei
+// dar pot modifica continutul listei --> .add(), .clear()
+
 public class Event {
     private int id_event;
     private FestivalDay day;

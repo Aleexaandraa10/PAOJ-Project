@@ -11,6 +11,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class DJDAO {
     private static DJDAO instance;
@@ -20,6 +21,41 @@ public class DJDAO {
             instance = new DJDAO();
         }
         return instance;
+    }
+
+    public Optional<DJ> read(int id) {
+        String sql = """
+        SELECT e.id_event, e.day, e.id_organizer, e.eventName, e.startTime, e.endTime,
+               d.djName, d.isMainStage
+        FROM Event e
+        JOIN DJ d ON e.id_event = d.id_event
+        WHERE e.id_event = ?
+    """;
+
+        try (Connection conn = DBConnection.connect();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, id);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                DJ dj = new DJ(
+                        rs.getString("eventName"),
+                        rs.getTime("startTime").toLocalTime(),
+                        rs.getTime("endTime").toLocalTime(),
+                        FestivalDay.valueOf(rs.getString("day")),
+                        rs.getString("djName"),
+                        rs.getBoolean("isMainStage")
+                );
+                dj.setIdEvent(rs.getInt("id_event"));
+                dj.setId_organizer(rs.getInt("id_organizer"));
+                return Optional.of(dj);
+            }
+        } catch (SQLException e) {
+            System.err.println("Error reading DJ:");
+            e.printStackTrace();
+        }
+        return Optional.empty();
     }
 
     public void create(DJ dj) {

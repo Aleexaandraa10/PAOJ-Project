@@ -11,6 +11,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class CampEatsDAO {
 
@@ -21,6 +22,53 @@ public class CampEatsDAO {
             instance = new CampEatsDAO();
         }
         return instance;
+    }
+
+    public Optional<CampEats> read(int id) {
+        String sql = """
+        SELECT e.id_event, e.day, e.id_organizer, e.eventName, e.startTime, e.endTime,
+               c.vendorName, c.openUntilLate
+        FROM Event e
+        JOIN CampEats c ON e.id_event = c.id_event
+        WHERE e.id_event = ?
+    """;
+
+        String foodSql = "SELECT foodType FROM CampEatsFoodType WHERE id_event = ?";
+
+        try (Connection conn = DBConnection.connect();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, id);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                List<String> foodTypes = new ArrayList<>();
+                try (PreparedStatement foodStmt = conn.prepareStatement(foodSql)) {
+                    foodStmt.setInt(1, id);
+                    ResultSet frs = foodStmt.executeQuery();
+                    while (frs.next()) {
+                        foodTypes.add(frs.getString("foodType"));
+                    }
+                }
+
+                CampEats ce = new CampEats(
+                        id,
+                        FestivalDay.valueOf(rs.getString("day")),
+                        rs.getString("eventName"),
+                        rs.getTime("startTime").toLocalTime(),
+                        rs.getTime("endTime").toLocalTime(),
+                        rs.getString("vendorName"),
+                        foodTypes,
+                        rs.getBoolean("openUntilLate")
+                );
+                ce.setId_organizer(rs.getInt("id_organizer"));
+                return Optional.of(ce);
+            }
+        } catch (SQLException e) {
+            System.err.println("Error reading CampEats:");
+            e.printStackTrace();
+        }
+        return Optional.empty();
     }
 
     public void create(CampEats campEats) {

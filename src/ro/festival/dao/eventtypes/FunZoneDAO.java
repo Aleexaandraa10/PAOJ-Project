@@ -10,6 +10,7 @@ import java.sql.*;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class FunZoneDAO {
     private static FunZoneDAO instance;
@@ -19,6 +20,60 @@ public class FunZoneDAO {
             instance = new FunZoneDAO();
         }
         return instance;
+    }
+
+    public Optional<FunZone> read(int id) {
+        String sql = """
+        SELECT e.id_event, e.day, e.id_organizer, e.eventName, e.startTime, e.endTime
+        FROM Event e
+        JOIN FunZone fz ON e.id_event = fz.id_event
+        WHERE e.id_event = ?
+    """;
+
+        String gameSql = """
+        SELECT g.id_game, g.gameName, g.isOpenAllNight, g.hasPrize, g.maxCapacity
+        FROM FunZoneGames fz JOIN Game g ON fz.id_game = g.id_game
+        WHERE fz.id_event = ?
+    """;
+
+        try (Connection conn = DBConnection.connect();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, id);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                List<Game> games = new ArrayList<>();
+                try (PreparedStatement gameStmt = conn.prepareStatement(gameSql)) {
+                    gameStmt.setInt(1, id);
+                    ResultSet grs = gameStmt.executeQuery();
+                    while (grs.next()) {
+                        games.add(new Game(
+                                grs.getInt("id_game"),
+                                grs.getString("gameName"),
+                                grs.getBoolean("isOpenAllNight"),
+                                grs.getBoolean("hasPrize"),
+                                grs.getInt("maxCapacity")
+                        ));
+                    }
+                }
+
+                FunZone fz = new FunZone(
+                        id,
+                        FestivalDay.valueOf(rs.getString("day")),
+                        rs.getString("eventName"),
+                        rs.getTime("startTime").toLocalTime(),
+                        rs.getTime("endTime").toLocalTime(),
+                        games
+                );
+                fz.setId_organizer(rs.getInt("id_organizer"));
+                return Optional.of(fz);
+            }
+        } catch (SQLException e) {
+            System.err.println("Error reading FunZone:");
+            e.printStackTrace();
+        }
+        return Optional.empty();
     }
 
     public void create(FunZone funZone) {

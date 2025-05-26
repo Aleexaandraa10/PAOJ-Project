@@ -153,4 +153,29 @@ public class ParticipantDAO extends BaseDAO<Participant, Integer> {
         return null;
     }
 
+    public Participant findByTicketCode(String code) {
+        String sql = "SELECT * FROM Participant WHERE code = ?";
+        try (Connection conn = DBConnection.connect();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, code);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                return new Participant(
+                        rs.getInt("id_participant"),
+                        rs.getString("participantName"),
+                        rs.getInt("age"),
+                        TicketDAO.getInstance().read(rs.getString("code")).orElse(null)
+                );
+            }
+        } catch (SQLException e) {
+            System.err.println("Error finding participant by ticket code:");
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+
 }
