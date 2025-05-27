@@ -1,7 +1,6 @@
 package ro.festival.service;
 
 import ro.festival.dao.EventDAO;
-import ro.festival.dao.eventtypes.*;
 import ro.festival.model.Event;
 import ro.festival.model.FestivalDay;
 
@@ -41,33 +40,12 @@ public class EventService {
     public void updateEvent(Event event) {
         eventDAO.update(event);
     }
+
+    public void deleteEvent(Integer id) {
+        eventDAO.delete(id);
+    }
     public List<Event> getEventsByDay(FestivalDay day) {
         return eventDAO.getEventsByDay(day);
     }
-
-    public Event getTypedEventById(int id) {
-        Event base = EventDAO.getInstance().read(id).orElse(null);
-        if (base == null) return null;
-
-        Event typed = null;
-
-        typed = ConcertDAO.getInstance().read(id).orElse(null);
-        if (typed != null) return typed;
-
-        typed = DJDAO.getInstance().read(id).orElse(null);
-        if (typed != null) return typed;
-
-        typed = GlobalTalksDAO.getInstance().read(id).orElse(null);
-        if (typed != null) return typed;
-
-        typed = CampEatsDAO.getInstance().read(id).orElse(null);
-        if (typed != null) return typed;
-
-        typed = FunZoneDAO.getInstance().read(id).orElse(null);
-        if (typed != null) return typed;
-
-        return base; // fallback, dar nu ar trebui să ajungă aici
-    }
-
 
 }

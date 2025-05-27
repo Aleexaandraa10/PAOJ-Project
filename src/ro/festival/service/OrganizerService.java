@@ -37,7 +37,7 @@ public class OrganizerService {
         organizerDAO.update(organizer);
     }
 
-    public void removeOrganizer(int id) {
+    public void deleteOrganizer(int id) {
         organizerDAO.delete(id);
     }
 }

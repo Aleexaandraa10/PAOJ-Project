@@ -1,5 +1,4 @@
 package ro.festival.service;
-
 import ro.festival.dao.TicketDAO;
 import ro.festival.model.Ticket;
 
@@ -7,8 +6,11 @@ import java.util.List;
 
 public class TicketService {
     private static TicketService instance;
+    private final TicketDAO ticketDAO;
 
-    private TicketService() {}
+    private TicketService() {
+        this.ticketDAO = TicketDAO.getInstance();
+    }
 
     public static TicketService getInstance() {
         if (instance == null) {
@@ -18,25 +20,25 @@ public class TicketService {
     }
 
     public void addTicket(Ticket ticket) {
-        if (!TicketDAO.getInstance().existsByCode(ticket.getCode())) {
-            TicketDAO.getInstance().create(ticket);
+        if (!ticketDAO.existsByCode(ticket.getCode())) {
+            ticketDAO.create(ticket);
         }
     }
 
 
     public Ticket getTicketByCode(String code) {
-        return TicketDAO.getInstance().read(code).orElse(null);
+        return ticketDAO.read(code).orElse(null);
     }
 
     public List<Ticket> getAllTickets() {
-        return TicketDAO.getInstance().readAll();
+        return ticketDAO.readAll();
     }
 
     public void updateTicket(Ticket t) {
-        TicketDAO.getInstance().update(t);
+        ticketDAO.update(t);
     }
 
     public void deleteTicket(String code) {
-        TicketDAO.getInstance().delete(code);
+        ticketDAO.delete(code);
     }
 }
