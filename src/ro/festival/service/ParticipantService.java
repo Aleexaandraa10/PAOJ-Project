@@ -32,7 +32,7 @@ public class ParticipantService {
         participantDAO.create(p);
     }
 
-    public Participant getParticipant(int id) {
+    public Participant getParticipantById(int id) {
         return participantDAO.read(id).orElse(null);
     }
 

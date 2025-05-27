@@ -81,6 +81,19 @@ public class ConcertDAO {
         }
     }
 
+    public void delete(int idEvent) {
+        String sql = "DELETE FROM Concert WHERE id_event = ?";
+
+        try (Connection conn = DBConnection.connect();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, idEvent);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            System.out.println("Error deleting Concert with ID: " + idEvent);
+            e.printStackTrace();
+        }
+    }
+
     public List<Concert> getAllConcerts() {
         List<Concert> concerts = new ArrayList<>();
         String sql = """

@@ -104,6 +104,19 @@ public class FunZoneDAO {
         }
     }
 
+    public void delete(int idEvent) {
+        String sql = "DELETE FROM FunZone WHERE id_event = ?";
+
+        try (Connection conn = DBConnection.connect();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, idEvent);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            System.out.println("Error deleting FunZone with ID: " + idEvent);
+            e.printStackTrace();
+        }
+    }
+
     private int insertOrGetGame(Game game) {
         // Caută dacă jocul există deja (după nume și capacitate)
         String selectSQL = "SELECT id_game FROM Game WHERE gameName = ? AND maxCapacity = ?";

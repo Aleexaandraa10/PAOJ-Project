@@ -19,10 +19,6 @@ public class Game {
         this(0, gameName, isOpenAllNight, hasPrize, maxCapacity);
     }
 
-    public int getIdGame() {
-        return id_game;
-    }
-
     public String getGameName() {
         return gameName;
     }

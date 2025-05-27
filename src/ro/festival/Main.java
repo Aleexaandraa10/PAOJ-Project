@@ -112,6 +112,11 @@ public class Main {
             System.out.println("3.  Group events by type");
             System.out.println("4.  Order all events by start time");
             System.out.println("5.  Move an event to another day");
+            System.out.println("6.  Delete a participant and their ticket");
+            System.out.println("7.  Sanction fake under-25 participant");
+            System.out.println("8.  Swap events between two organizers");
+            System.out.println("9.  Remove event with the lowest participation");
+            System.out.println("10. Reassign events and remove an organizer from the system");
             System.out.println("0.  Back to role selection");
             System.out.println("============================================");
 
@@ -150,6 +155,26 @@ public class Main {
                 case "5" -> {
                     System.out.println("Move an event to another day:");
                     festivalService.moveEvent(scanner);
+                }
+                case "6" -> {
+                    System.out.println("Delete a participant and their ticket:");
+                    festivalService.deleteParticipantAndTicket(scanner);
+                }
+                case "7" -> {
+                    System.out.println("Sanction fake under-25 participant:");
+                    festivalService.sanctionFakeUnder25Claim(scanner);
+                }
+                case "8" -> {
+                    System.out.println("Swap events between two organizers:");
+                    festivalService.swapEventsBetweenOrganizers(scanner);
+                }
+                case "9" -> {
+                    System.out.println("Remove event with the lowest participation:");
+                    festivalService.deleteLeastPopularEvent();
+                }
+                case "10" -> {
+                    System.out.println("Reassign events and remove an organizer from the system:");
+                    festivalService.deleteOrganizer(scanner);
                 }
                 case "0" -> inOrganizerMenu = false;
                 default -> System.out.println("Invalid option. Please try again.\n");

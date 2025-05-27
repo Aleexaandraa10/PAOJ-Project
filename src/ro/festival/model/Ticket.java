@@ -2,7 +2,7 @@ package ro.festival.model;
 
 public class Ticket {
     private final String code;
-    private final double price;
+    private double price;
 
     public Ticket(String code, double price) {
         this.code = code;
@@ -15,6 +15,10 @@ public class Ticket {
 
     public double getPrice() {
         return price;
+    }
+
+    public void setPrice(double price) {
+        this.price = price;
     }
 
     @Override

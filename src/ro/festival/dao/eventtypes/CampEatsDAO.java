@@ -109,6 +109,27 @@ public class CampEatsDAO {
         }
     }
 
+    public void delete(int idEvent) {
+        String deleteFoodTypes = "DELETE FROM CampEatsFoodType WHERE id_event = ?";
+        String deleteCampEats = "DELETE FROM CampEats WHERE id_event = ?";
+
+        try (Connection conn = DBConnection.connect()) {
+            try (PreparedStatement stmt1 = conn.prepareStatement(deleteFoodTypes)) {
+                stmt1.setInt(1, idEvent);
+                stmt1.executeUpdate();
+            }
+
+            try (PreparedStatement stmt2 = conn.prepareStatement(deleteCampEats)) {
+                stmt2.setInt(1, idEvent);
+                stmt2.executeUpdate();
+            }
+
+        } catch (SQLException e) {
+            System.out.println("Error deleting CampEats with ID: " + idEvent);
+            e.printStackTrace();
+        }
+    }
+
     public List<CampEats> getAllCampEats() {
         List<CampEats> campEatsList = new ArrayList<>();
         String sql = """

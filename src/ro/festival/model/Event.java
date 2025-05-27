@@ -42,9 +42,8 @@ public class Event {
     public LocalTime getEndTime() { return endTime; }
     public FestivalDay getDay() { return day; }
 
-    public FestivalDay setDay(FestivalDay day) {
+    public void setDay(FestivalDay day) {
         this.day = day;
-        return day;
     }
 
     @Override

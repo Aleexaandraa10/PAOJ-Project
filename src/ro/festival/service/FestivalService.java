@@ -1,9 +1,6 @@
 package ro.festival.service;
 import ro.festival.InitHelper;
-import ro.festival.dao.EventDAO;
-import ro.festival.dao.GlobalTalkSeatDAO;
-import ro.festival.dao.ParticipantDAO;
-import ro.festival.dao.ParticipantEventDAO;
+import ro.festival.dao.*;
 import ro.festival.dao.eventtypes.*;
 import ro.festival.model.*;
 import ro.festival.model.eventtypes.*;
@@ -81,19 +78,19 @@ public class FestivalService {
         for (Organizer org : organizers) {
             for (Event event : org.getEvents()) {
                 event.setId_organizer(org.getId());
-                if (event instanceof Concert){
+                if (event instanceof Concert) {
                     ConcertDAO.getInstance().create((Concert) event);
                 }
-                if (event instanceof DJ){
+                if (event instanceof DJ) {
                     DJDAO.getInstance().create((DJ) event);
                 }
-                if (event instanceof CampEats){
+                if (event instanceof CampEats) {
                     CampEatsDAO.getInstance().create((CampEats) event);
                 }
-                if (event instanceof GlobalTalks){
+                if (event instanceof GlobalTalks) {
                     GlobalTalksDAO.getInstance().create((GlobalTalks) event);
                 }
-                if (event instanceof FunZone){
+                if (event instanceof FunZone) {
                     FunZoneDAO.getInstance().create((FunZone) event);
                 }
                 EventService.getInstance().addEvent(event);
@@ -219,10 +216,10 @@ public class FestivalService {
     //                                           APPLICATION FUNCTIONALITIES - PARTICIPANTS
     // =================================================================================================================
     // === 1. View all tickets ===
-    public void printAllTickets(){
-        List <Ticket> tickets = TicketService.getInstance().getAllTickets();
+    public void printAllTickets() {
+        List<Ticket> tickets = TicketService.getInstance().getAllTickets();
 
-        if(tickets.isEmpty()){
+        if (tickets.isEmpty()) {
             System.out.println("No tickets found");
             return;
         }
@@ -230,12 +227,12 @@ public class FestivalService {
     }
 
     // === 2. View participants under 25 ===
-    public void printParticipantsUnder25(){
+    public void printParticipantsUnder25() {
         List<Participant> participants = ParticipantService.getInstance().getAllParticipants();
 
         participants.stream()
-                .filter(p-> p.getAge()<25)
-                .forEach(p->System.out.println(p.getParticipantName() + " (" + p.getAge() + " years old)"));
+                .filter(p -> p.getAge() < 25)
+                .forEach(p -> System.out.println(p.getParticipantName() + " (" + p.getAge() + " years old)"));
     }
 
     // === 3. View participation stats (top participants & event types) ===
@@ -285,7 +282,7 @@ public class FestivalService {
 
 
     // === 4. Show all DJ sets on the main stage ===
-    public void printDJOnMainStage(){
+    public void printDJOnMainStage() {
         List<DJ> djs = DJDAO.getInstance().getAllDJs();
         djs.stream()
                 .filter(DJ::getIsMainStage)
@@ -433,7 +430,7 @@ public class FestivalService {
 
 
     // === 8. Find events that start after a specific time ===
-    public void printEventsByStartTime(LocalTime time){
+    public void printEventsByStartTime(LocalTime time) {
         List<Event> events = EventService.getInstance().getAllEvents();
         events.stream()
                 .filter(e -> e.getStartTime().isAfter(time))
@@ -513,8 +510,7 @@ public class FestivalService {
         }
 
         System.out.println("Points from ticket and events: " + eventPoints);
-        if (lastWinner != null && lastWinner.equals(currentParticipant))
-        {
+        if (lastWinner != null && lastWinner.equals(currentParticipant)) {
             System.out.println("Bonus from tournament: 50");
             eventPoints += 50;
             System.out.println("Total points: " + eventPoints);
@@ -595,7 +591,7 @@ public class FestivalService {
 
         ParticipantService.getInstance().setLastTournamentWinner(winner);
 
-        System.out.println(winner.getParticipantName() +" earned 50 points!");
+        System.out.println(winner.getParticipantName() + " earned 50 points!");
         System.out.println("\nWinner's ticket code: " + winner.getTicket().getCode());
     }
 
@@ -724,7 +720,6 @@ public class FestivalService {
     }
 
 
-
     // === 5. Move an event to another day ===
     public void moveEvent(Scanner scanner) {
         System.out.print("Please choose the day (1-3): ");
@@ -777,6 +772,303 @@ public class FestivalService {
         System.out.println("✅ Event '" + selectedEvent.getEventName() + "' has been moved to DAY" + newDay + ".");
     }
 
+    // === 6. Delete a participant and their ticket ===
+    public void deleteParticipantAndTicket(Scanner scanner) {
+        List<Participant> participants = ParticipantService.getInstance().getAllParticipants();
 
+        if (participants.isEmpty()) {
+            System.out.println("No participants found.");
+            return;
+        }
+
+        System.out.println("Participants:");
+        for (Participant p : participants) {
+            System.out.println(p.getId() + ". " + p.getParticipantName() + " (Ticket: " + p.getTicket().getCode() + ")");
+        }
+
+        System.out.print("Enter the ID of the participant to delete: ");
+        int id = Integer.parseInt(scanner.nextLine());
+
+        Participant participant = ParticipantService.getInstance().getParticipantById(id);
+        if (participant == null) {
+            System.out.println("Participant not found.");
+            return;
+        }
+
+        String ticketCode = participant.getTicket().getCode();
+
+        ParticipantService.getInstance().deleteParticipant(id);
+
+        if (participant.getTicket() instanceof TicketUnder25) {
+            TicketUnder25DAO.getInstance().delete(ticketCode);
+        }
+
+        TicketService.getInstance().deleteTicket(ticketCode);
+
+        System.out.println("Participant and their ticket deleted successfully.");
+    }
+
+    // === 7.  Sanction fake under-25 participant ===
+    public void sanctionFakeUnder25Claim(Scanner scanner) {
+        System.out.print("Enter the ticket code of the suspected participant: ");
+        String ticketCode = scanner.nextLine().trim();
+
+        // gasim participantul asociat
+        Participant participant = ParticipantService.getInstance().findByTicketCode(ticketCode);
+        if (participant == null) {
+            System.out.println("No participant found with this ticket.");
+            return;
+        }
+
+        if (!(participant.getTicket() instanceof TicketUnder25)) {
+            System.out.println("This ticket is not under the discount category. No action needed.");
+            return;
+        }
+
+        System.out.println("Participant " + participant.getParticipantName() +
+                " was found to have falsely declared their age (" + participant.getAge() + ").");
+
+        // introduc noua varsta
+        int correctAge;
+        while (true) {
+            System.out.print("Enter the correct age: ");
+            try {
+                correctAge = Integer.parseInt(scanner.nextLine().trim());
+                if (correctAge <= 25) {
+                    System.out.println("The age must be over 25 to apply this correction.");
+                    continue;
+                }
+                break;
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid number. Please try again.");
+            }
+        }
+
+        // stergem biletul din categoria TicketUnder25
+        TicketUnder25DAO.getInstance().delete(ticketCode);
+
+        // actualizam varsta participantului
+        participant.setAge(correctAge);
+        ParticipantService.getInstance().updateParticipant(participant);
+
+        // se actualizeaza pretul biletului
+        Ticket oldTicket = participant.getTicket();
+        double oldPrice = oldTicket.getPrice();
+        double discount = ((TicketUnder25) oldTicket).getDiscountPercentage();
+        double newPrice = Math.round(oldPrice / (1 - discount / 100.0) * 100.0) / 100.0;
+
+        oldTicket.setPrice(newPrice);
+        TicketService.getInstance().updateTicket(oldTicket);
+
+        System.out.println("\nSanction applied.");
+        System.out.println("• Participant name: " + participant.getParticipantName());
+        System.out.println("• Corrected age: " + correctAge);
+        System.out.println("• New ticket price (no discount): " + newPrice + " RON");
+    }
+
+
+    // === 8.  Swap events between two organizers ===
+    public void swapEventsBetweenOrganizers(Scanner scanner) {
+        List<Organizer> organizers = OrganizerService.getInstance().getAllOrganizers();
+        List<Event> allEvents = EventService.getInstance().getAllEvents();
+
+        if (organizers.size() < 2) {
+            System.out.println("Not enough organizers to perform a swap.");
+            return;
+        }
+
+        // afisez organizatorii
+        System.out.println("Available organizers:");
+        for (Organizer o : organizers) {
+            System.out.println(o.getId() + ". " + o.getOrganizerName());
+        }
+
+        System.out.print("Select first organizer ID: ");
+        int id1 = Integer.parseInt(scanner.nextLine());
+        Organizer org1 = OrganizerService.getInstance().getOrganizerById(id1);
+        if (org1 == null) {
+            System.out.println("Invalid ID.");
+            return;
+        }
+
+        System.out.print("Select second organizer ID: ");
+        int id2 = Integer.parseInt(scanner.nextLine());
+        Organizer org2 = OrganizerService.getInstance().getOrganizerById(id2);
+        if (org2 == null || id1 == id2) {
+            System.out.println("Invalid ID.");
+            return;
+        }
+
+        // gasesc evenimentele fiecarui organizator
+        List<Event> events1 = allEvents.stream()
+                .filter(e -> e.getId_organizer() == id1)
+                .toList();
+
+        List<Event> events2 = allEvents.stream()
+                .filter(e -> e.getId_organizer() == id2)
+                .toList();
+
+        if (events1.isEmpty() || events2.isEmpty()) {
+            System.out.println("One of the organizers has no events.");
+            return;
+        }
+
+        // selectez evenimentele pe care le voi interschimba
+        System.out.println("\nEvents from " + org1.getOrganizerName() + ":");
+        for (int i = 0; i < events1.size(); i++) {
+            System.out.println((i + 1) + ". " + events1.get(i));
+        }
+
+        System.out.print("Choose an event to give from Organizer 1: ");
+        int ev1Index = Integer.parseInt(scanner.nextLine()) - 1;
+        Event e1 = events1.get(ev1Index);
+
+        System.out.println("\nEvents from " + org2.getOrganizerName() + ":");
+        for (int i = 0; i < events2.size(); i++) {
+            System.out.println((i + 1) + ". " + events2.get(i));
+        }
+
+        System.out.print("Choose an event to give from Organizer 2: ");
+        int ev2Index = Integer.parseInt(scanner.nextLine()) - 1;
+        Event e2 = events2.get(ev2Index);
+
+        // interschimb organizatorii eventurilor
+        e1.setId_organizer(id2);
+        e2.setId_organizer(id1);
+
+        EventService.getInstance().updateEvent(e1);
+        EventService.getInstance().updateEvent(e2);
+
+        // actualizez lista de evenimente în Organizer (în memorie)
+        org1.getEvents().remove(e1);
+        org2.getEvents().remove(e2);
+        org1.getEvents().add(e2);
+        org2.getEvents().add(e1);
+
+        // actualizez numele organizatorilor pentru a reflecta schimbarea
+        org1.setOrganizerName(org1.getOrganizerName() + " (Reassigned)");
+        org2.setOrganizerName(org2.getOrganizerName() + " (Reassigned)");
+
+        OrganizerService.getInstance().updateOrganizer(org1);
+        OrganizerService.getInstance().updateOrganizer(org2);
+
+        System.out.println("\nThe festival committee has decided these events will be better handled by the other organizers.");
+        System.out.println("• \"" + e1.getEventName() + "\" is now managed by " + org2.getOrganizerName());
+        System.out.println("• \"" + e2.getEventName() + "\" is now managed by " + org1.getOrganizerName());
+    }
+
+
+    // === 9.  Remove event with the lowest participation ===
+    public void deleteLeastPopularEvent() {
+        List<Event> allEvents = EventService.getInstance().getAllEvents();
+        if (allEvents.isEmpty()) {
+            System.out.println("No events found.");
+            return;
+        }
+
+        Map<Integer, Long> participationCounts = ParticipantEventDAO.getInstance().getParticipationCounts();
+
+        Event leastPopular = null;
+        long minCount = Long.MAX_VALUE;
+
+        for (Event event : allEvents) {
+            long count = participationCounts.getOrDefault(event.getIdEvent(), 0L);
+            if (count < minCount) {
+                minCount = count;
+                leastPopular = event;
+            }
+        }
+
+        if (leastPopular == null) {
+            System.out.println("Could not determine the least popular event.");
+            return;
+        }
+
+        int id = leastPopular.getIdEvent();
+
+        // sterg din tabela specifica subclasei
+        if (leastPopular instanceof CampEats) {
+            CampEatsDAO.getInstance().delete(id);
+        } else if (leastPopular instanceof DJ) {
+            DJDAO.getInstance().delete(id);
+        } else if (leastPopular instanceof Concert) {
+            ConcertDAO.getInstance().delete(id);
+        } else if (leastPopular instanceof FunZone) {
+            FunZoneDAO.getInstance().delete(id);
+        } else if (leastPopular instanceof GlobalTalks) {
+            GlobalTalksDAO.getInstance().delete(id);
+        }
+
+        // apoi din tabela Event
+        EventService.getInstance().deleteEvent(id);
+        EventService.getInstance().getAllEvents().remove(leastPopular);
+
+        System.out.println("Event \"" + leastPopular.getEventName() + "\" was removed from the database and memory due to low participation (" + minCount + " participant(s)).");
+    }
+
+
+
+    // === 9.  Reassign events and remove an organizer from the system ===
+    public void deleteOrganizer(Scanner scanner) {
+        List<Organizer> organizers = OrganizerService.getInstance().getAllOrganizers();
+        List<Event> allEvents = EventService.getInstance().getAllEvents();
+
+        if (organizers.size() < 2) {
+            System.out.println("You need at least two organizers for reassignment.");
+            return;
+        }
+
+        // afisez organizatorii existenti
+        System.out.println("Available organizers:");
+        for (Organizer o : organizers) {
+            System.out.println(o.getId() + ". " + o.getOrganizerName());
+        }
+
+        System.out.print("Enter the ID of the organizer you want to remove: ");
+        int targetId = Integer.parseInt(scanner.nextLine());
+        Organizer targetOrganizer = OrganizerService.getInstance().getOrganizerById(targetId);
+        if (targetOrganizer == null) {
+            System.out.println("Invalid organizer ID.");
+            return;
+        }
+
+        // gasim evenimentele
+        List<Event> targetEvents = allEvents.stream()
+                .filter(e -> e.getId_organizer() == targetId)
+                .toList();
+
+        if (!targetEvents.isEmpty()) {
+            System.out.println("This organizer has " + targetEvents.size() + " event(s). They must be reassigned.");
+
+            for (Event e : targetEvents) {
+                System.out.println("\nEvent: " + e.getEventName());
+
+                // afisare ceilalti organizatori
+                List<Organizer> alternatives = organizers.stream()
+                        .filter(o -> o.getId() != targetId)
+                        .toList();
+
+                for (Organizer alt : alternatives) {
+                    System.out.println(alt.getId() + ". " + alt.getOrganizerName());
+                }
+
+                System.out.print("Select new organizer ID for this event: ");
+                int newId = Integer.parseInt(scanner.nextLine());
+                Organizer newOrg = OrganizerService.getInstance().getOrganizerById(newId);
+
+                if (newOrg == null || newOrg.getId() == targetId) {
+                    System.out.println("Invalid reassignment. Skipping this event.");
+                    continue;
+                }
+
+                e.setId_organizer(newId);
+                EventService.getInstance().updateEvent(e);
+            }
+        }
+
+        // stergem organizatorul original
+        OrganizerService.getInstance().deleteOrganizer(targetId);
+        System.out.println("\nOrganizer '" + targetOrganizer.getOrganizerName() + "' was removed and their events reassigned.");
+    }
 
 }

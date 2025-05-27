@@ -25,9 +25,10 @@ public class OrganizerService {
         organizerDAO.create(organizer);
     }
 
-    public Optional<Organizer> getOrganizerById(int id) {
-        return organizerDAO.read(id);
+    public Organizer getOrganizerById(int id) {
+        return OrganizerDAO.getInstance().read(id).orElse(null);
     }
+
 
     public List<Organizer> getAllOrganizers() {
         return organizerDAO.readAll();
