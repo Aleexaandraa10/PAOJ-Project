@@ -35,6 +35,7 @@ public class CampEatsDAO {
 
         String foodSql = "SELECT foodType FROM CampEatsFoodType WHERE id_event = ?";
 
+        
         try (Connection conn = DBConnection.connect();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 

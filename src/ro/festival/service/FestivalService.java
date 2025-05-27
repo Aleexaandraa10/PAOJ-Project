@@ -9,8 +9,6 @@ import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
-// idee de baza: daca un atribut nu tb sa se modifice dupa instantiere, il fac final
-// e ca si cum as spune: acest camp face parte din identitatea obiectului si nu se va schimba
 
 public class FestivalService {
     public void initDemoData() {
@@ -66,8 +64,7 @@ public class FestivalService {
         // ==================================
 
         // Organizator 1: Concerte și DJ
-        List<Organizer> organizers = getOrganizers();
-
+        List<Organizer> organizers = getOrganizers(); // metoda definita mai jos
 
         // 1. Inserăm toți organizatorii în baza de date
         for (Organizer org : organizers) {
@@ -98,7 +95,7 @@ public class FestivalService {
         }
 
         // ===============================
-        //     PARTICIPANT EVENT LINKING
+        //    PARTICIPANT EVENT LINKING
         // ===============================
         ParticipantEventDAO participantEventDAO = ParticipantEventDAO.getInstance();
 
@@ -115,39 +112,16 @@ public class FestivalService {
         Event gt2 = allEvents.stream().filter(e -> e.getEventName().equals("Festival Sustainability")).findFirst().orElse(null);
         Event gt3 = allEvents.stream().filter(e -> e.getEventName().equals("Marketing 4 Festivals")).findFirst().orElse(null);
 
-        if (sweetCorner != null) {
-            participantEventDAO.addParticipantToEvent(p1.getId(), sweetCorner.getIdEvent());
-            participantEventDAO.addParticipantToEvent(p2.getId(), sweetCorner.getIdEvent());
-        }
-        if (fastFood != null) {
-            participantEventDAO.addParticipantToEvent(p1.getId(), fastFood.getIdEvent());
-            participantEventDAO.addParticipantToEvent(p3.getId(), fastFood.getIdEvent());
-        }
-        if (salty2 != null) {
-            participantEventDAO.addParticipantToEvent(p4.getId(), salty2.getIdEvent());
-            participantEventDAO.addParticipantToEvent(p5.getId(), salty2.getIdEvent());
-        }
-        if (salty1 != null) {
-            participantEventDAO.addParticipantToEvent(p5.getId(), salty1.getIdEvent());
-            participantEventDAO.addParticipantToEvent(p6.getId(), salty1.getIdEvent());
-        }
-        if (fz1 != null) {
-            for (Participant p : List.of(p7, p8, p6, p1))
-                participantEventDAO.addParticipantToEvent(p.getId(), fz1.getIdEvent());
-        }
-        if (fz2 != null) {
-            for (Participant p : List.of(p5, p4, p3))
-                participantEventDAO.addParticipantToEvent(p.getId(), fz2.getIdEvent());
-        }
-        if (gt1 != null) participantEventDAO.addParticipantToEvent(p1.getId(), gt1.getIdEvent());
-        if (gt2 != null) {
-            participantEventDAO.addParticipantToEvent(p4.getId(), gt2.getIdEvent());
-            participantEventDAO.addParticipantToEvent(p3.getId(), gt2.getIdEvent());
-        }
-        if (gt3 != null) {
-            participantEventDAO.addParticipantToEvent(p7.getId(), gt3.getIdEvent());
-            participantEventDAO.addParticipantToEvent(p8.getId(), gt3.getIdEvent());
-        }
+        // metoda auxiliara de a adauga ev. fara redundanta definita mai jos
+        addParticipantsIfNotNull(List.of(p1, p2), sweetCorner, participantEventDAO);
+        addParticipantsIfNotNull(List.of(p1, p3), fastFood, participantEventDAO);
+        addParticipantsIfNotNull(List.of(p4, p5), salty2, participantEventDAO);
+        addParticipantsIfNotNull(List.of(p5, p6), salty1, participantEventDAO);
+        addParticipantsIfNotNull(List.of(p7, p8, p6, p1), fz1, participantEventDAO);
+        addParticipantsIfNotNull(List.of(p5, p4, p3), fz2, participantEventDAO);
+        addParticipantsIfNotNull(List.of(p1), gt1, participantEventDAO);
+        addParticipantsIfNotNull(List.of(p4, p3), gt2, participantEventDAO);
+        addParticipantsIfNotNull(List.of(p7, p8), gt3, participantEventDAO);
 
         // ===============================
         //  GLOBAL TALK SEAT RESERVATIONS
@@ -169,6 +143,14 @@ public class FestivalService {
         // ===============================
         InitHelper.setInitialized(true);
         System.out.println("Demo data has been initialized successfully.");
+    }
+
+    private void addParticipantsIfNotNull(List<Participant> participants, Event event, ParticipantEventDAO dao) {
+        if (event != null) {
+            for (Participant p : participants) {
+                dao.addParticipantToEvent(p.getId(), event.getIdEvent());
+            }
+        }
     }
 
     private static List<Organizer> getOrganizers() {
@@ -208,8 +190,7 @@ public class FestivalService {
                 new GlobalTalks("Marketing 4 Festivals", LocalTime.of(12, 0), LocalTime.of(13, 30), FestivalDay.DAY3, "Ioana Georgescu", "Social Media Magic", 4)
         ));
 
-        List<Organizer> organizers = List.of(org1, org2, org3);
-        return organizers;
+        return List.of(org1, org2, org3);
     }
 
     // =================================================================================================================
@@ -239,23 +220,7 @@ public class FestivalService {
     public void viewParticipationInsights() {
         System.out.println("----- Festival Participation Insights -----");
 
-        Map<String, Long> typeFrequencies = new HashMap<>();
-
-        // Obține evenimente din fiecare DAO specializat
-        List<Concert> concerts = ConcertDAO.getInstance().getAllConcerts();
-        typeFrequencies.put("Concert", (long) concerts.size());
-
-        List<DJ> djs = DJDAO.getInstance().getAllDJs();
-        typeFrequencies.put("DJ", (long) djs.size());
-
-        List<GlobalTalks> talks = GlobalTalksDAO.getInstance().getAllGlobalTalks();
-        typeFrequencies.put("GlobalTalks", (long) talks.size());
-
-        List<CampEats> eats = CampEatsDAO.getInstance().getAllCampEats();
-        typeFrequencies.put("CampEats", (long) eats.size());
-
-        List<FunZone> funZones = FunZoneDAO.getInstance().getAllFunZones();
-        typeFrequencies.put("FunZone", (long) funZones.size());
+        Map<String, Long> typeFrequencies = computeTypeFrequencies(); //metoda definita mai jos
 
         // Găsește cel mai frecvent tip
         String mostCommonType = typeFrequencies.entrySet().stream()
@@ -273,11 +238,32 @@ public class FestivalService {
                 .sorted(Map.Entry.<Integer, Long>comparingByValue().reversed())
                 .limit(3)
                 .forEach(entry -> {
-                    Participant p = ParticipantDAO.getInstance().read(entry.getKey()).orElse(null);
+                    Participant p = ParticipantService.getInstance().getParticipantById(entry.getKey());
                     if (p != null) {
                         System.out.println("• " + p.getParticipantName() + ": " + entry.getValue() + " events");
                     }
                 });
+    }
+
+    private Map<String, Long> computeTypeFrequencies() {
+        Map<String, Long> typeFrequencies = new HashMap<>();
+
+        List<Concert> concerts = ConcertDAO.getInstance().getAllConcerts();
+        typeFrequencies.put("Concert", (long) concerts.size());
+
+        List<DJ> djs = DJDAO.getInstance().getAllDJs();
+        typeFrequencies.put("DJ", (long) djs.size());
+
+        List<GlobalTalks> talks = GlobalTalksDAO.getInstance().getAllGlobalTalks();
+        typeFrequencies.put("GlobalTalks", (long) talks.size());
+
+        List<CampEats> eats = CampEatsDAO.getInstance().getAllCampEats();
+        typeFrequencies.put("CampEats", (long) eats.size());
+
+        List<FunZone> funZones = FunZoneDAO.getInstance().getAllFunZones();
+        typeFrequencies.put("FunZone", (long) funZones.size());
+
+        return typeFrequencies;
     }
 
 
@@ -408,7 +394,7 @@ public class FestivalService {
         System.out.print("Your age? ");
         int age = Integer.parseInt(scanner.nextLine());
 
-        Participant participant = ParticipantDAO.getInstance().findByNameAndAge(name, age);
+        Participant participant = ParticipantService.getInstance().findByNameAndAge(name, age);
 
         if (participant == null) {
             System.out.println("Participant not found in system. Please register first.");
@@ -477,7 +463,7 @@ public class FestivalService {
                     event = CampEatsDAO.getInstance().read(id).orElse(null);
                     if (event != null) return event;
 
-                    return EventDAO.getInstance().read(id).orElse(null); // fallback
+                    return EventService.getInstance().getEventById(id).orElse(null); // fallback
                 })
                 .filter(Objects::nonNull)
                 .toList();
@@ -565,7 +551,7 @@ public class FestivalService {
             return;
         }
 
-        List<Participant> allParticipants = ParticipantDAO.getInstance().readAll();
+        List<Participant> allParticipants = ParticipantService.getInstance().getAllParticipants();
         List<Participant> others = allParticipants.stream()
                 .filter(p -> !p.equals(userParticipant))
                 .collect(Collectors.toList());
@@ -987,16 +973,14 @@ public class FestivalService {
         int id = leastPopular.getIdEvent();
 
         // sterg din tabela specifica subclasei
-        if (leastPopular instanceof CampEats) {
-            CampEatsDAO.getInstance().delete(id);
-        } else if (leastPopular instanceof DJ) {
-            DJDAO.getInstance().delete(id);
-        } else if (leastPopular instanceof Concert) {
-            ConcertDAO.getInstance().delete(id);
-        } else if (leastPopular instanceof FunZone) {
-            FunZoneDAO.getInstance().delete(id);
-        } else if (leastPopular instanceof GlobalTalks) {
-            GlobalTalksDAO.getInstance().delete(id);
+        switch (leastPopular) {
+            case CampEats ignored -> CampEatsDAO.getInstance().delete(id);
+            case DJ ignored -> DJDAO.getInstance().delete(id);
+            case Concert ignored1 -> ConcertDAO.getInstance().delete(id);
+            case FunZone ignored -> FunZoneDAO.getInstance().delete(id);
+            case GlobalTalks ignored -> GlobalTalksDAO.getInstance().delete(id);
+            default -> {
+            }
         }
 
         // apoi din tabela Event

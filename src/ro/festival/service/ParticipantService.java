@@ -52,4 +52,8 @@ public class ParticipantService {
         return participantDAO.findByTicketCode(code);
     }
 
+    public Participant findByNameAndAge(String name, int age) {
+        return participantDAO.findByNameAndAge(name, age);
+    }
+
 }
