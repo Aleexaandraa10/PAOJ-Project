@@ -51,9 +51,4 @@ public class ParticipantService {
     public Participant findByTicketCode(String code) {
         return participantDAO.findByTicketCode(code);
     }
-
-    public Participant findByNameAndAge(String name, int age) {
-        return participantDAO.findByNameAndAge(name, age);
-    }
-
 }

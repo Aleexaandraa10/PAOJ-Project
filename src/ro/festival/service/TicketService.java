@@ -25,7 +25,6 @@ public class TicketService {
         }
     }
 
-
     public Ticket getTicketByCode(String code) {
         return ticketDAO.read(code).orElse(null);
     }

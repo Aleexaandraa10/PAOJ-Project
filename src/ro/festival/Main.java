@@ -1,6 +1,7 @@
 package ro.festival;
 
 import ro.festival.database.DBInitializer;
+import ro.festival.service.AuditService;
 import ro.festival.service.FestivalService;
 import java.time.LocalTime;
 import java.util.Scanner;
@@ -107,14 +108,10 @@ public class Main {
 
         while (inOrganizerMenu) {
             System.out.println("============== Organizer Menu ==============");
-
             // Interrogations
-
             System.out.println("1.  View full schedule for a specific day ordered by start time");
             System.out.println("2.  View all organizers and their events");
-
             // Actions
-
             System.out.println("3.  Group events by type");
             System.out.println("4.  Order all events by start time");
             System.out.println("5.  Move an event to another day");
@@ -218,7 +215,7 @@ public class Main {
                     InitHelper.setInitialized(true);
                     FestivalService festivalService = new FestivalService();
                     festivalService.initDemoData();
-                    System.out.println("Database has been reset and populated with demo data.");
+                    AuditService.getInstance().logAction("Database has been reset and populated with demo data");
                 }
                 case "0" -> inDBMenu = false;
                 default -> System.out.println("Invalid option. Please try again.\n");

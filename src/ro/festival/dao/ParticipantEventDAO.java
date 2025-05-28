@@ -48,24 +48,25 @@ public class ParticipantEventDAO {
 
     public Map<Integer, Long> getParticipationCounts() {
         Map<Integer, Long> result = new HashMap<>();
-        String sql = "SELECT id_participant, COUNT(*) as cnt FROM ParticipantEvent GROUP BY id_participant";
+        String sql = "SELECT id_event, COUNT(*) as cnt FROM ParticipantEvent GROUP BY id_event";
 
         try (Connection conn = DBConnection.connect();
              PreparedStatement stmt = conn.prepareStatement(sql);
              ResultSet rs = stmt.executeQuery()) {
 
             while (rs.next()) {
-                int id = rs.getInt("id_participant");
+                int eventId = rs.getInt("id_event");
                 long count = rs.getLong("cnt");
-                result.put(id, count);
+                result.put(eventId, count);
             }
 
         } catch (SQLException e) {
             e.printStackTrace();
         }
 
+        System.out.println("DEBUG: Participation counts");
+        result.forEach((eventId, count) -> System.out.println("Event ID " + eventId + " → " + count + " participant(s)"));
+
         return result;
     }
-
-
 }

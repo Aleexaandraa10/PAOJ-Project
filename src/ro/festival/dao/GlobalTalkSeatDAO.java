@@ -45,10 +45,7 @@ public class GlobalTalkSeatDAO {
 
             while (rs.next()) {
                 int participantId = rs.getInt("id_participant");
-                Participant participant = ParticipantDAO.getInstance().read(participantId).orElse(null);
-                if (participant != null) {
-                    participants.add(participant);
-                }
+                ParticipantDAO.getInstance().read(participantId).ifPresent(participants::add);
             }
 
         } catch (SQLException e) {
