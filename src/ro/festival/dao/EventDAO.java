@@ -3,9 +3,6 @@ package ro.festival.dao;
 import ro.festival.database.DBConnection;
 import ro.festival.model.Event;
 import ro.festival.model.FestivalDay;
-import ro.festival.model.*;
-import ro.festival.model.eventtypes.*;
-
 import java.sql.*;
 import java.time.LocalTime;
 import java.util.ArrayList;

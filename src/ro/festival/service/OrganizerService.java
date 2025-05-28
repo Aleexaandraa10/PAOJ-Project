@@ -1,10 +1,8 @@
 package ro.festival.service;
-
 import ro.festival.dao.OrganizerDAO;
 import ro.festival.model.Organizer;
-
 import java.util.List;
-import java.util.Optional;
+
 
 public class OrganizerService {
     private static OrganizerService instance;
@@ -25,9 +23,10 @@ public class OrganizerService {
         organizerDAO.create(organizer);
     }
 
-    public Optional<Organizer> getOrganizerById(int id) {
-        return organizerDAO.read(id);
+    public Organizer getOrganizerById(int id) {
+        return organizerDAO.read(id).orElse(null);
     }
+
 
     public List<Organizer> getAllOrganizers() {
         return organizerDAO.readAll();
@@ -37,7 +36,7 @@ public class OrganizerService {
         organizerDAO.update(organizer);
     }
 
-    public void removeOrganizer(int id) {
+    public void deleteOrganizer(int id) {
         organizerDAO.delete(id);
     }
 }

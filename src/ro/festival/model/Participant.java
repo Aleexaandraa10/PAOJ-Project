@@ -3,7 +3,7 @@ package ro.festival.model;
 public class Participant {
     private int id;
     private final String participantName;
-    private final int age;
+    private int age;
     private final Ticket ticket;
 
     public Participant(int id, String participantName, int age, Ticket ticket) {
@@ -21,8 +21,8 @@ public class Participant {
         return id;
     }
 
-    public int setId(int id) { this.id = id;
-        return id;
+    public void setId(int id) {
+        this.id = id;
     }
 
     public String getParticipantName() {
@@ -31,6 +31,9 @@ public class Participant {
 
     public int getAge() {
         return age;
+    }
+    public void setAge(int age) {
+        this.age = age;
     }
 
     public Ticket getTicket() {

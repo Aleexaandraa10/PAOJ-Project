@@ -30,3 +30,6 @@ bin/
 
 # === Config files (sensitive) ===
 src/config.properties
+.idea/
+*.iml
+*.xml

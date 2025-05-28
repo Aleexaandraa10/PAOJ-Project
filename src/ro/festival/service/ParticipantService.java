@@ -1,5 +1,4 @@
 package ro.festival.service;
-
 import ro.festival.dao.ParticipantDAO;
 import ro.festival.model.Participant;
 
@@ -8,8 +7,11 @@ import java.util.List;
 public class ParticipantService {
     private static ParticipantService instance;
     private Participant lastTournamentWinner;
+    private final ParticipantDAO participantDAO;
 
-    private ParticipantService() {}
+    private ParticipantService() {
+        this.participantDAO = ParticipantDAO.getInstance();
+    }
 
     public static ParticipantService getInstance() {
         if (instance == null) {
@@ -17,7 +19,6 @@ public class ParticipantService {
         }
         return instance;
     }
-
 
     public Participant getLastTournamentWinner() {
         return lastTournamentWinner;
@@ -28,27 +29,31 @@ public class ParticipantService {
     }
 
     public void addParticipant(Participant p) {
-        ParticipantDAO.getInstance().create(p);
+        participantDAO.create(p);
     }
 
-    public Participant getParticipant(int id) {
-        return ParticipantDAO.getInstance().read(id).orElse(null);
+    public Participant getParticipantById(int id) {
+        return participantDAO.read(id).orElse(null);
     }
 
     public List<Participant> getAllParticipants() {
-        return ParticipantDAO.getInstance().readAll();
+        return participantDAO.readAll();
     }
 
     public void updateParticipant(Participant p) {
-        ParticipantDAO.getInstance().update(p);
+        participantDAO.update(p);
     }
 
     public void deleteParticipant(int id) {
-        ParticipantDAO.getInstance().delete(id);
+        participantDAO.delete(id);
     }
 
     public Participant findByTicketCode(String code) {
-        return ParticipantDAO.getInstance().findByTicketCode(code);
+        return participantDAO.findByTicketCode(code);
+    }
+
+    public Participant findByNameAndAge(String name, int age) {
+        return participantDAO.findByNameAndAge(name, age);
     }
 
 }

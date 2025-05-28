@@ -5,7 +5,7 @@ import java.util.List;
 public class Organizer {
     private int id_organizer;
     private final String companyName;
-    private final String organizerName;
+    private String organizerName;
     private final List<Event> events;
 
     public Organizer(int id_organizer, String companyName, String organizerName, List<Event> events) {
@@ -34,6 +34,10 @@ public class Organizer {
 
     public String getOrganizerName() {
         return organizerName;
+    }
+
+    public void setOrganizerName(String s) {
+        this.organizerName = s;
     }
 
     public List<Event> getEvents() {

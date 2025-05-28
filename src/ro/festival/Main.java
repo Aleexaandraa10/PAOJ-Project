@@ -1,5 +1,6 @@
 package ro.festival;
 
+import ro.festival.database.DBInitializer;
 import ro.festival.service.FestivalService;
 import java.time.LocalTime;
 import java.util.Scanner;
@@ -8,7 +9,6 @@ public class Main {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
         FestivalService festivalService = new FestivalService();
-        festivalService.initDemoData();
 
         System.out.println("Welcome to the Festival App!");
         System.out.println("We’re happy to see you!\n");
@@ -19,6 +19,7 @@ public class Main {
             System.out.println("Please select your role:");
             System.out.println("1 - Participant");
             System.out.println("2 - Organizer");
+            System.out.println("3 - Database Tools");
             System.out.println("0 - Exit the application");
             System.out.print("Enter your choice: ");
             String roleChoice = scanner.nextLine();
@@ -27,6 +28,7 @@ public class Main {
             switch (roleChoice) {
                 case "1" -> handleParticipantMenu(scanner, festivalService);
                 case "2" -> handleOrganizerMenu(scanner, festivalService);
+                case "3" -> handleDatabaseToolsMenu(scanner);
                 case "0" -> {
                     System.out.println("Thank you for visiting the Festival App. See you soon!");
                     running = false;
@@ -105,13 +107,22 @@ public class Main {
 
         while (inOrganizerMenu) {
             System.out.println("============== Organizer Menu ==============");
+
             // Interrogations
+
             System.out.println("1.  View full schedule for a specific day ordered by start time");
             System.out.println("2.  View all organizers and their events");
+
             // Actions
+
             System.out.println("3.  Group events by type");
             System.out.println("4.  Order all events by start time");
             System.out.println("5.  Move an event to another day");
+            System.out.println("6.  Delete a participant and their ticket");
+            System.out.println("7.  Sanction fake under-25 participant");
+            System.out.println("8.  Swap events between two organizers");
+            System.out.println("9.  Remove event with the lowest participation");
+            System.out.println("10. Reassign events and remove an organizer from the system");
             System.out.println("0.  Back to role selection");
             System.out.println("============================================");
 
@@ -151,10 +162,69 @@ public class Main {
                     System.out.println("Move an event to another day:");
                     festivalService.moveEvent(scanner);
                 }
+                case "6" -> {
+                    System.out.println("Delete a participant and their ticket:");
+                    festivalService.deleteParticipantAndTicket(scanner);
+                }
+                case "7" -> {
+                    System.out.println("Sanction fake under-25 participant:");
+                    festivalService.sanctionFakeUnder25Claim(scanner);
+                }
+                case "8" -> {
+                    System.out.println("Swap events between two organizers:");
+                    festivalService.swapEventsBetweenOrganizers(scanner);
+                }
+                case "9" -> {
+                    System.out.println("Remove event with the lowest participation:");
+                    festivalService.deleteLeastPopularEvent();
+                }
+                case "10" -> {
+                    System.out.println("Reassign events and remove an organizer from the system:");
+                    festivalService.deleteOrganizer(scanner);
+                }
                 case "0" -> inOrganizerMenu = false;
                 default -> System.out.println("Invalid option. Please try again.\n");
             }
             System.out.println();
         }
     }
+
+    private static void handleDatabaseToolsMenu(Scanner scanner) {
+        boolean inDBMenu = true;
+
+        while (inDBMenu) {
+            System.out.println("=========== Database Tools ===========");
+            System.out.println("1. Initialize database (if not already initialized)");
+            System.out.println("2. Reset database (drop + setup)");
+            System.out.println("0. Back to main menu");
+            System.out.println("=======================================");
+            System.out.print("Enter your choice: ");
+            String dbChoice = scanner.nextLine();
+            System.out.println();
+
+            switch (dbChoice) {
+                case "1" -> {
+                    if (!InitHelper.isInitialized()) {
+                        System.out.println("The database is not initialized. Running setup...");
+                        DBInitializer.setupDatabase();
+                        InitHelper.setInitialized(true);
+                    } else {
+                        System.out.println("The database is already initialized.");
+                    }
+                }
+                case "2" -> {
+                    System.out.println("Resetting the database...");
+                    DBInitializer.resetDatabase();
+                    InitHelper.setInitialized(true);
+                    FestivalService festivalService = new FestivalService();
+                    festivalService.initDemoData();
+                    System.out.println("Database has been reset and populated with demo data.");
+                }
+                case "0" -> inDBMenu = false;
+                default -> System.out.println("Invalid option. Please try again.\n");
+            }
+            System.out.println();
+        }
+    }
+
 }

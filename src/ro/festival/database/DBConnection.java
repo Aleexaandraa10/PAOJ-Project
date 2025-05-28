@@ -6,19 +6,14 @@ import java.sql.SQLException;
 
 // creeaza efectiv conexiunea cu baza de date
 public class DBConnection {
-    public static Connection connect() {
-        try {
-            return DriverManager.getConnection(
-                    Config.getDbUrl(),
-                    Config.getDbUser(),
-                    Config.getDbPassword()
-            );
-        } catch (SQLException e) {
-            System.err.println("Error while connecting to the database:");
-            e.printStackTrace();
-            return null;
-        }
+    public static Connection connect() throws SQLException {
+        return DriverManager.getConnection(
+                Config.getDbUrl(),
+                Config.getDbUser(),
+                Config.getDbPassword()
+        );
     }
+
 
     public static void disconnect(Connection connection) {
         if (connection != null) {

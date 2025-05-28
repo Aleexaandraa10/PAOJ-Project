@@ -43,7 +43,7 @@ public class InitHelper {
              ResultSet rs = stmt.executeQuery()) {
             return rs.next();
         } catch (SQLException e) {
-            System.err.println("Eroare la verificarea tabelei: " + tableName);
+            System.err.println("Error at table's verification: " + tableName);
             e.printStackTrace();
             return false;
         }

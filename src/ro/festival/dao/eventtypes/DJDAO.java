@@ -78,6 +78,20 @@ public class DJDAO {
             e.printStackTrace();
         }
     }
+
+    public void delete(int idEvent) {
+        String sql = "DELETE FROM DJ WHERE id_event = ?";
+
+        try (Connection conn = DBConnection.connect();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, idEvent);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            System.out.println("Error deleting DJ with ID: " + idEvent);
+            e.printStackTrace();
+        }
+    }
+
     public List<DJ> getAllDJs() {
         List<DJ> djs = new ArrayList<>();
         String sql = """
