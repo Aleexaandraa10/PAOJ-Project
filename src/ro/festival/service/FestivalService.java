@@ -378,21 +378,13 @@ public class FestivalService {
             return;
         }
 
-        System.out.print("Your name: ");
-        String name = scanner.nextLine();
+        System.out.print("Enter your ticket code: ");
+        String code = scanner.nextLine();
 
-        if (!name.matches("^([A-Z][a-z]+)( [A-Z][a-z]+)*$")) {
-            System.out.println("Invalid name. It should start with a capital letter and have more than one letter.");
-            return;
-        }
-
-        System.out.print("Your age? ");
-        int age = Integer.parseInt(scanner.nextLine());
-
-        Participant participant = ParticipantService.getInstance().findByNameAndAge(name, age);
+        Participant participant = ParticipantService.getInstance().findByTicketCode(code);
 
         if (participant == null) {
-            System.out.println("Participant not found in system. Please register first.");
+            System.out.println("Participant not found in system with this ticket code. Please register first.");
             return;
         }
 
@@ -987,7 +979,7 @@ public class FestivalService {
 
 
 
-    // === 9.  Reassign events and remove an organizer from the system ===
+    // === 10.  Reassign events and remove an organizer from the system ===
     public void deleteOrganizer(Scanner scanner) {
         List<Organizer> organizers = OrganizerService.getInstance().getAllOrganizers();
         List<Event> allEvents = EventService.getInstance().getAllEvents();

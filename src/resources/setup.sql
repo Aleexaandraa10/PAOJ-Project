@@ -44,7 +44,7 @@ CREATE TABLE CampEatsFoodType (
     id_event INT,
     foodType VARCHAR(100),
     PRIMARY KEY (id_event, foodType),
-    FOREIGN KEY (id_event) REFERENCES CampEats(id_event)
+    FOREIGN KEY (id_event) REFERENCES CampEats(id_event) ON DELETE CASCADE
 );
 
 CREATE TABLE Concert (
