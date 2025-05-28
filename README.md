@@ -1,93 +1,85 @@
+# 🎪 Festival Management Platform
 
-# 🎉 Festival App
-
-This Java application simulates a management platform for a large-scale music festival like UNTOLD or Neversea. It offers interactive features for both participants and organizers, with a gamified and dynamic console-based interface.
-
-## 🎯 Purpose of the Application
-
-The Festival App enables:
-
-- management of festival events and schedules;
-- interaction with the FunZone area;
-- ticket purchasing and seat reservation;
-- earning and spending points through a gamified reward system;
-- simulation of a mini-tournament between participants.
-
-The application supports two types of users: **Participants** and **Organizers**, each with a dedicated menu and specific options.
+A comprehensive **Java-based festival management system** built as part of a university PAO course project. This application simulates the full ecosystem of a music and cultural festival like **Untold** or **Neversea**, integrating participant registration, event scheduling, organizer coordination, and audit logging.
 
 ---
 
-## 🎟️ Participant Menu
+## Key Features
 
-1. **View all tickets (including discounts)**  
-   Displays all available tickets and applies discounts for users under the age of 25.
+### 📟 Core Functionality
 
-2. **Participants under 25**  
-   Lists participants who are eligible for special discounted tickets.
+* **CRUD operations** for Participants, Events, Organizers, and Tickets
+* **Multiple event types** implemented via inheritance:
 
-3. **Participation Statistics**  
-   Shows the top 3 most active participants and the most attended event type.
+  * `Concert`, `DJ`, `CampEats`, `GlobalTalks`, `FunZone`
+* **Event participation system** with join operations and validation
+* **Ticket types**: Standard & Under-25 (with discount)
+* **GlobalTalk seat reservation** system (limited-capacity)
+* **FunZone mini-tournament** with random winner and point bonuses
+* **Festival Points System** to reward engagement and redeem prizes
+* **Under-25 age validation** with correction and penalty
+* **Organizer removal with dynamic event reassignment**
 
-4. **DJ Sets on the Main Stage**  
-   Displays a list of DJs performing on the main stage.
+### 📄 Database Integration
 
-5. **All-night Games in the FunZone**  
-   Filters and displays games that are open all night.
+* **MySQL relational database** with normalized structure
+* DAO classes for each entity type, following **Single Responsibility** and **Open/Closed** principles
+* Modular CRUD implementations based on an abstract `BaseDAO<T, K>`
+* Foreign key relationships managed explicitly (e.g., `ParticipantEvent`, `GlobalTalkSeat`)
 
-6. **Purchase a Ticket**  
-   Allows the user to buy a ticket and input personal information.
+### 🔐 Audit Logging
 
-7. **Reserve a Seat for Limited-Capacity Events (GlobalTalks)**  
-   Participants can reserve seats for talks, limited by capacity.
+* CSV-based **audit log** that records every significant user action
+* Each entry includes `action_name` and `timestamp`
+* Singleton `AuditService` class for centralized logging
 
-8. **Search Events Starting After a Certain Time**  
-   Filters events based on a user-defined starting time.
+### 📋 Menu-driven CLI Interface
 
-9. **Points System – Earn & Spend**
-    - Earn points automatically when buying tickets (10% of ticket price).
-    - Bonus points are awarded for attending CampEats, FunZone, and GlobalTalks events.
-    - Points can be redeemed for rewards (e.g., badges, VIP access).
-
-10. **Join the Mini-Tournament in FunZone**
-    - Join using your ticket code.
-    - Opponents are randomly generated.
-    - Simulates match rounds (1v1 or 3-player matches).
-    - The final winner earns 50 bonus points.
-
----
-
-## 🛠️ Organizer Menu
-
-1. **View Full Schedule for a Specific Day**  
-   Displays all events scheduled for a selected day in chronological order.
-
-2. **View Organizers and Their Events**  
-   Lists each organizer along with the events they manage.
-
-3. **Group Events by Type**  
-   Groups events into categories: `Concert`, `DJ`, `CampEats`, `FunZone`, `GlobalTalks`.
-
-4. **Sort Events by Start Time**  
-   Lists all festival events in chronological order.
-
-5. **Reschedule an Event**  
-   Allows organizers to change the day of an event; the schedule updates accordingly.
+* Separate interactive menus for Participants & Organizers
+* Four service layers handle distinct business logic: `ParticipantService`, `EventService`, `TicketService`, `OrganizerService`
+* Central **`FestivalService`** coordinates all operations, integrating the entire business logic
+* Input validation and graceful error handling
 
 ---
 
-## 🧑‍💻 Technologies Used
+## 🧱 Project Structure
 
-- Java 17
-- Object-Oriented Programming (OOP)
-- Generic Collections (`List`, `Set`, `Map`)
-- Modular design: separation of `Main` and `FestivalService`
-- Points and gamification system
-- Role-based interactive menu
+```
+Proiect_PAO/
+├── src/
+│   ├── ro.festival/
+│   │   ├── dao/                 # All DAO classes
+│   │   ├── database/            # DB connection helper
+│   │   ├── model/               # Domain models
+│   │   ├── service/             # Services incl. FestivalService & AuditService
+│   │   └── InitHelper.java      # Demo data loader
+├── audit_log.csv                # Action log file
+├── README.md                    # Project overview (this file)
+├── docs/                        # Documentation & ER diagrams
+│   └── database_diagram.png     # ER Diagram
+```
 
+---
 
---- 
+## 🖼️ ER Diagram
 
-## 📌 Notes
+> You can find the full Entity-Relationship diagram inside the `docs/` folder: [`database_diagram.png`](docs/database_diagram.png)
 
-- The app is fully functional via the command line.
-- All demo data is generated inside the `initDemoData()` method from `FestivalService.java`.
+---
+
+## 🛠️ Technologies Used
+
+* Java 17
+* IntelliJ IDEA
+* MySQL
+* JDBC
+
+---
+
+## 📦 Sample Use Cases
+
+* A 22-year-old user buys a ticket → receives a discount → added as Participant
+* A participant is caught misrepresenting age under 25 → corrected and ticket recalculated
+* An Organizer is removed → events redistributed to others
+* A participant reserves a seat at a limited GlobalTalk → seats decrease in real-time
+* A user checks points earned from attended events and redeems a `VIP Lounge Access`
