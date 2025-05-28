@@ -12,11 +12,6 @@ import java.util.stream.Collectors;
 
 public class FestivalService {
     public void initDemoData() {
-        if (InitHelper.isInitialized()) {
-            System.out.println("The data already exists. InitDemoData won't run.");
-            return;
-        }
-
         // ==================================
         //             TICKETS
         // ==================================

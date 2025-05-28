@@ -5,7 +5,7 @@ import java.util.Properties;
 
 // Încarcă valorile de configurare (URL, user, parolă) din fișierul config.properties
 public class Config {
-    private static Properties properties = new Properties();
+    private static final Properties properties = new Properties();
 
     static {
         try (InputStream input = Config.class.getClassLoader().getResourceAsStream("config.properties")) {
