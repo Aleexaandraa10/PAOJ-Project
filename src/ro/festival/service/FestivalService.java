@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 
 
 public class FestivalService {
+    AuditService auditService = AuditService.getInstance();
     public void initDemoData() {
         // ==================================
         //             TICKETS
@@ -344,6 +345,8 @@ public class FestivalService {
             System.out.println("No discount applied.");
         }
         System.out.println("Ticket details:\n" + ticket);
+
+        auditService.logAction("Ticket purchased");
     }
 
     // === 7. Reserve a seat for a limited-capacity event ===
@@ -399,6 +402,8 @@ public class FestivalService {
         }
 
         System.out.println("Available seats: " + (selected.getSeats() - reserved.size()));
+
+        auditService.logAction("Seat reserved");
     }
 
 
@@ -509,6 +514,7 @@ public class FestivalService {
                 spendPoints(eventPoints, cost);
             }
         }
+        auditService.logAction("A participant spent points");
     }
 
 
@@ -566,6 +572,8 @@ public class FestivalService {
 
         System.out.println(winner.getParticipantName() + " earned 50 points!");
         System.out.println("\nWinner's ticket code: " + winner.getTicket().getCode());
+
+        auditService.logAction("A participant won the tournament");
     }
 
     private Participant runTournamentRoundFlexible(List<Participant> players, String roundName) {
@@ -681,6 +689,7 @@ public class FestivalService {
             System.out.println("\n=== " + type + " ===");
             eventList.forEach(System.out::println);
         });
+        auditService.logAction("Events grouped by type");
     }
 
 
@@ -690,6 +699,7 @@ public class FestivalService {
         events.stream()
                 .sorted(Comparator.comparing(Event::getStartTime))
                 .forEach(System.out::println);
+        auditService.logAction("Searched events by start time");
     }
 
 
@@ -743,6 +753,7 @@ public class FestivalService {
         EventService.getInstance().updateEvent(selectedEvent);
 
         System.out.println("✅ Event '" + selectedEvent.getEventName() + "' has been moved to DAY" + newDay + ".");
+        auditService.logAction("An event was moved to DAY" + newDay + ".");
     }
 
     // === 6. Delete a participant and their ticket ===
@@ -779,6 +790,7 @@ public class FestivalService {
         TicketService.getInstance().deleteTicket(ticketCode);
 
         System.out.println("Participant and their ticket deleted successfully.");
+        auditService.logAction("Participant deleted");
     }
 
     // === 7.  Sanction fake under-25 participant ===
@@ -837,6 +849,8 @@ public class FestivalService {
         System.out.println("• Participant name: " + participant.getParticipantName());
         System.out.println("• Corrected age: " + correctAge);
         System.out.println("• New ticket price (no discount): " + newPrice + " RON");
+
+        auditService.logAction("Participant sanctioned");
     }
 
 
@@ -928,6 +942,8 @@ public class FestivalService {
         System.out.println("\nThe festival committee has decided these events will be better handled by the other organizers.");
         System.out.println("• \"" + e1.getEventName() + "\" is now managed by " + org2.getOrganizerName());
         System.out.println("• \"" + e2.getEventName() + "\" is now managed by " + org1.getOrganizerName());
+
+        auditService.logAction("Events swapped");
     }
 
 
@@ -975,6 +991,8 @@ public class FestivalService {
         EventService.getInstance().getAllEvents().remove(leastPopular);
 
         System.out.println("Event \"" + leastPopular.getEventName() + "\" was removed from the database and memory due to low participation (" + minCount + " participant(s)).");
+
+        auditService.logAction("Low-participation event removed");
     }
 
 
@@ -1040,6 +1058,8 @@ public class FestivalService {
         // stergem organizatorul original
         OrganizerService.getInstance().deleteOrganizer(targetId);
         System.out.println("\nOrganizer '" + targetOrganizer.getOrganizerName() + "' was removed and their events reassigned.");
+
+        auditService.logAction("Organizer removed");
     }
 
 }

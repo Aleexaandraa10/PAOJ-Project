@@ -11,6 +11,8 @@ public class InitHelper {
     private static boolean initialized = false;
 
     public static boolean isInitialized() {
+        if (initialized) return true; // dacă știm deja că e true, nu mai interogăm baza
+
         // Nu setăm `initialized` decât dacă toate tabelele sunt populate
         try (Connection conn = DBConnection.connect()) {
             boolean allPopulated =

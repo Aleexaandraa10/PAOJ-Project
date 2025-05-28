@@ -15,15 +15,15 @@ public class DBConnection {
     }
 
 
-    public static void disconnect(Connection connection) {
-        if (connection != null) {
-            try {
-                connection.close();
-                System.out.println("Database connection closed.");
-            } catch (SQLException e) {
-                System.err.println("Error while closing the database connection:");
-                e.printStackTrace();
-            }
-        }
-    }
+//    public static void disconnect(Connection connection) {
+//        if (connection != null) {
+//            try {
+//                connection.close();
+//                System.out.println("Database connection closed.");
+//            } catch (SQLException e) {
+//                System.err.println("Error while closing the database connection:");
+//                e.printStackTrace();
+//            }
+//        }
+//    }
 }
