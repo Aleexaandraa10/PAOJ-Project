@@ -10,7 +10,6 @@ A comprehensive **Java-based festival management system** built as part of a uni
 
 * **CRUD operations** for Participants, Events, Organizers, and Tickets
 * **Multiple event types** implemented via inheritance:
-
   * `Concert`, `DJ`, `CampEats`, `GlobalTalks`, `FunZone`
 * **Event participation system** with join operations and validation
 * **Ticket types**: Standard & Under-25 (with discount)
@@ -22,7 +21,7 @@ A comprehensive **Java-based festival management system** built as part of a uni
 
 ### 📄 Database Integration
 
-* **MySQL relational database** with normalized structure
+* **MySQL relational database** (v9.3.0) with normalized structure
 * DAO classes for each entity type, following **Single Responsibility** and **Open/Closed** principles
 * Modular CRUD implementations based on an abstract `BaseDAO<T, K>`
 * Foreign key relationships managed explicitly (e.g., `ParticipantEvent`, `GlobalTalkSeat`)
@@ -53,11 +52,23 @@ Proiect_PAO/
 │   │   ├── model/               # Domain models
 │   │   ├── service/             # Services incl. FestivalService & AuditService
 │   │   └── InitHelper.java      # Demo data loader
+│   ├── resources/
+│   │   ├── setup.sql            # Creates all database tables
+│   │   ├── drop_tables.sql      # Drops all database tables
+│   │   └── select_tables.sql    # Sample SELECT queries for testing
 ├── audit_log.csv                # Action log file
 ├── README.md                    # Project overview (this file)
 ├── docs/                        # Documentation & ER diagrams
 │   └── database_diagram.png     # ER Diagram
 ```
+
+> If you want to reset the database (drop and recreate all tables), go to **Menu Option 3 → Database Tools**, then select **Option 2: "Reset database (drop + setup)"**.  
+> This will automatically reinsert a complete set of demo data (participants, events, tickets, etc.) via the `FestivalService.initDemoData()` method.  
+> These predefined entries are required in order to fully test features such as:
+> - GlobalTalk seat reservation (requires existing GlobalTalk events and participants)
+> - FunZone tournament (requires multiple participants and events)
+> - Statistics and audit logs (require previous activity in the system)
+> - Under-25 ticket handling and validation
 
 ---
 
@@ -71,8 +82,15 @@ Proiect_PAO/
 
 * Java 17
 * IntelliJ IDEA
-* MySQL
+* MySQL (v9.3.0)
 * JDBC
+
+---
+
+## 🗃️ Database Info
+
+- **Database type**: MySQL
+- **Database version**: 9.3.0
 
 ---
 
@@ -82,4 +100,4 @@ Proiect_PAO/
 * A participant is caught misrepresenting age under 25 → corrected and ticket recalculated
 * An Organizer is removed → events redistributed to others
 * A participant reserves a seat at a limited GlobalTalk → seats decrease in real-time
-* A user checks points earned from attended events and redeems a `VIP Lounge Access`
+* A user checks points earned from attended events and redeems a `VIP Lounge Access`  
