@@ -48,7 +48,7 @@ Proiect_PAO/
 │   │   ├── database/            # DB connection helper
 │   │   ├── model/               # Domain models
 │   │   ├── service/             # Services incl. FestivalService & AuditService
-│   │   └── InitHelper.java      # Demo data loader
+│   │   └── InitHelper.java      # Check whether all necessary tables already contain data
 │   ├── resources/
 │   │   ├── setup.sql            # Creates all database tables
 │   │   ├── drop_tables.sql      # Drops all database tables
