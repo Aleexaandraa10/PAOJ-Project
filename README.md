@@ -2,7 +2,6 @@
 
 A comprehensive **Java-based festival management system** built as part of a university PAO course project. This application simulates the full ecosystem of a music and cultural festival like **Untold** or **Neversea**, integrating participant registration, event scheduling, organizer coordination, and audit logging.
 
----
 
 ## Key Features
 
@@ -39,8 +38,6 @@ A comprehensive **Java-based festival management system** built as part of a uni
 * Central **`FestivalService`** coordinates all operations, integrating the entire business logic
 * Input validation and graceful error handling
 
----
-
 ## 🧱 Project Structure
 
 ```
@@ -70,13 +67,11 @@ Proiect_PAO/
 > - Statistics and audit logs (require previous activity in the system)
 > - Under-25 ticket handling and validation
 
----
 
 ## 🖼️ ER Diagram
 
 > You can find the full Entity-Relationship diagram inside the `docs/` folder: [`database_diagram.png`](docs/database_diagram.png)
 
----
 
 ## 🛠️ Technologies Used
 
@@ -85,14 +80,6 @@ Proiect_PAO/
 * MySQL (v9.3.0)
 * JDBC
 
----
-
-## 🗃️ Database Info
-
-- **Database type**: MySQL
-- **Database version**: 9.3.0
-
----
 
 ## 📦 Sample Use Cases
 
